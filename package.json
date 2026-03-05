@@ -1,0 +1,46 @@
+{
+  "name": "@adbutler/mcp-server",
+  "version": "1.0.1",
+  "description": "MCP server for the AdButler ad management API — gives AI assistants direct tool access to manage advertisers, campaigns, zones, creatives, placements, and reports",
+  "type": "module",
+  "bin": {
+    "adbutler-mcp-server": "dist/index.js"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsc --watch",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "adbutler",
+    "advertising",
+    "ad-server",
+    "claude",
+    "ai-tools"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/adbutler/mcp-server"
+  },
+  "homepage": "https://github.com/adbutler/mcp-server#readme",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.27.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.0"
+  }
+}
