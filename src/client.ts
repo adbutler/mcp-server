@@ -7,6 +7,23 @@ export class AdButlerClient {
     this.apiKey = apiKey;
   }
 
+  get isAuthenticated(): boolean {
+    return !!this.apiKey;
+  }
+
+  setApiKey(key: string): void {
+    this.apiKey = key;
+  }
+
+  async postPublic(path: string, body?: Record<string, unknown>): Promise<unknown> {
+    const res = await fetch(BASE_URL + path, {
+      method: 'POST',
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    return this.handleResponse(res);
+  }
+
   private getHeaders(): Record<string, string> {
     const headers: Record<string, string> = {
       'Accept': 'application/json',
