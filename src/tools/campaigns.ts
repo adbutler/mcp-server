@@ -4,6 +4,18 @@ import { PaginationParams, type ToolDef } from '../types.js';
 
 export function campaignTools(client: AdButlerClient): ToolDef[] {
   return [
+    // --- All Campaigns ---
+    {
+      name: 'list_all_campaigns',
+      description: 'List all campaigns across all types',
+      schema: { ...PaginationParams },
+      handler: async (args) => {
+        const data = await client.get('/campaigns', args);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+
+    // --- Standard Campaigns ---
     {
       name: 'list_campaigns',
       description: 'List all standard campaigns',
@@ -63,6 +75,61 @@ export function campaignTools(client: AdButlerClient): ToolDef[] {
       },
       handler: async (args) => {
         const data = await client.delete(`/campaigns/standard/${args.id}`);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'archive_campaign',
+      description: 'Archive a standard campaign (soft-delete, can be restored later)',
+      schema: {
+        id: z.number().describe('Campaign ID'),
+      },
+      handler: async (args) => {
+        const data = await client.get(`/campaigns/standard/${args.id}/archive`);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+
+    // --- Archived Standard Campaigns ---
+    {
+      name: 'list_archived_campaigns',
+      description: 'List all archived standard campaigns',
+      schema: { ...PaginationParams },
+      handler: async (args) => {
+        const data = await client.get('/campaigns/standard/archived', args);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'get_archived_campaign',
+      description: 'Get details of a specific archived standard campaign',
+      schema: {
+        id: z.number().describe('Archived campaign ID'),
+      },
+      handler: async (args) => {
+        const data = await client.get(`/campaigns/standard/archived/${args.id}`);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'delete_archived_campaign',
+      description: 'Permanently delete an archived standard campaign',
+      schema: {
+        id: z.number().describe('Archived campaign ID'),
+      },
+      handler: async (args) => {
+        const data = await client.delete(`/campaigns/standard/archived/${args.id}`);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'unarchive_campaign',
+      description: 'Restore an archived standard campaign back to active status',
+      schema: {
+        id: z.number().describe('Archived campaign ID'),
+      },
+      handler: async (args) => {
+        const data = await client.get(`/campaigns/standard/archived/${args.id}/unarchive`);
         return JSON.stringify(data, null, 2);
       },
     },

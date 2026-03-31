@@ -39,6 +39,20 @@ export function placementTools(client: AdButlerClient): ToolDef[] {
       },
     },
     {
+      name: 'update_placement',
+      description: 'Update an existing placement',
+      schema: {
+        id: z.number().describe('Placement ID'),
+        active: z.boolean().optional().describe('Whether placement is active'),
+        weight: z.number().optional().describe('Relative delivery weight'),
+      },
+      handler: async (args) => {
+        const { id, ...body } = args;
+        const data = await client.put(`/placements/${id}`, body as Record<string, unknown>);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
       name: 'delete_placement',
       description: 'Delete a placement (remove an ad item from a zone)',
       schema: {

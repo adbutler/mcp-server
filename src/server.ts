@@ -4,13 +4,28 @@ import { setupTools } from './setup.js';
 import {
   advertiserTools,
   campaignTools,
+  campaignAssignmentTools,
+  channelTools,
   zoneTools,
   publisherTools,
   adItemTools,
   creativeTools,
   placementTools,
+  nativeTemplateTools,
+  scheduleTools,
+  mediaGroupTools,
+  targetingTools,
   reportTools,
+  reportConfigTools,
   adServingTools,
+  vastTools,
+  contractTools,
+  accountTools,
+  programmaticTools,
+  userDbTools,
+  dataListTools,
+  securityTools,
+  draftTools,
 } from './tools/index.js';
 import type { ToolDef } from './types.js';
 
@@ -37,20 +52,35 @@ function getApiTools(client: AdButlerClient): ToolDef[] {
   return [
     ...advertiserTools(client),
     ...campaignTools(client),
+    ...campaignAssignmentTools(client),
+    ...channelTools(client),
     ...zoneTools(client),
     ...publisherTools(client),
     ...adItemTools(client),
     ...creativeTools(client),
     ...placementTools(client),
+    ...nativeTemplateTools(client),
+    ...scheduleTools(client),
+    ...mediaGroupTools(client),
+    ...targetingTools(client),
     ...reportTools(client),
+    ...reportConfigTools(client),
     ...adServingTools(client),
+    ...vastTools(client),
+    ...contractTools(client),
+    ...accountTools(client),
+    ...programmaticTools(client),
+    ...userDbTools(client),
+    ...dataListTools(client),
+    ...securityTools(client),
+    ...draftTools(client),
   ];
 }
 
 export function createServer(client: AdButlerClient): McpServer {
   const server = new McpServer({
     name: 'adbutler',
-    version: '1.0.0',
+    version: '2.0.0',
   });
 
   if (client.isAuthenticated) {

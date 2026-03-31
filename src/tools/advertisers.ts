@@ -54,5 +54,58 @@ export function advertiserTools(client: AdButlerClient): ToolDef[] {
         return JSON.stringify(data, null, 2);
       },
     },
+    {
+      name: 'delete_advertiser',
+      description: 'Delete an advertiser',
+      schema: {
+        id: z.number().describe('Advertiser ID'),
+      },
+      handler: async (args) => {
+        const data = await client.delete(`/advertisers/${args.id}`);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'archive_advertiser',
+      description: 'Archive an advertiser (soft-delete, can be restored later)',
+      schema: {
+        id: z.number().describe('Advertiser ID'),
+      },
+      handler: async (args) => {
+        const data = await client.get(`/advertisers/${args.id}/archive`);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'list_archived_advertisers',
+      description: 'List all archived advertisers',
+      schema: { ...PaginationParams },
+      handler: async (args) => {
+        const data = await client.get('/advertisers/archived', args);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'get_archived_advertiser',
+      description: 'Get details of a specific archived advertiser',
+      schema: {
+        id: z.number().describe('Archived advertiser ID'),
+      },
+      handler: async (args) => {
+        const data = await client.get(`/advertisers/archived/${args.id}`);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'unarchive_advertiser',
+      description: 'Restore an archived advertiser back to active status',
+      schema: {
+        id: z.number().describe('Archived advertiser ID'),
+      },
+      handler: async (args) => {
+        const data = await client.get(`/advertisers/archived/${args.id}/unarchive`);
+        return JSON.stringify(data, null, 2);
+      },
+    },
   ];
 }
