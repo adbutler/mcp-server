@@ -96,9 +96,7 @@ export function vastTools(client: AdButlerClient): ToolDef[] {
       schema: {
         name: z.string().describe('Campaign name'),
         advertiser: z.number().describe('Advertiser ID'),
-        start_date: z.string().optional().describe('Start date (YYYY-MM-DD)'),
-        end_date: z.string().optional().describe('End date (YYYY-MM-DD)'),
-        active: z.boolean().optional().describe('Whether campaign is active'),
+        contract: z.number().optional().describe('Contract ID (requires Contract Management add-on)'),
       },
       handler: async (args) => {
         const data = await client.post('/vast-campaigns', args as Record<string, unknown>);
@@ -111,9 +109,8 @@ export function vastTools(client: AdButlerClient): ToolDef[] {
       schema: {
         id: z.number().describe('VAST campaign ID'),
         name: z.string().optional().describe('Campaign name'),
-        start_date: z.string().optional().describe('Start date (YYYY-MM-DD)'),
-        end_date: z.string().optional().describe('End date (YYYY-MM-DD)'),
-        active: z.boolean().optional().describe('Whether campaign is active'),
+        advertiser: z.number().optional().describe('Advertiser ID'),
+        contract: z.number().optional().describe('Contract ID (requires Contract Management add-on)'),
       },
       handler: async (args) => {
         const { id, ...body } = args;
@@ -394,8 +391,10 @@ export function vastTools(client: AdButlerClient): ToolDef[] {
       schema: {
         name: z.string().describe('Zone name'),
         publisher: z.number().describe('Publisher ID'),
-        width: z.number().describe('Zone width in pixels'),
-        height: z.number().describe('Zone height in pixels'),
+        default_vast_ad_item: z.number().optional().describe('Default VAST ad item ID (mutually exclusive with default_vast_campaign)'),
+        default_vast_campaign: z.number().optional().describe('Default VAST campaign ID (mutually exclusive with default_vast_ad_item)'),
+        serve_priority_order: z.enum(['weight', 'auction']).optional().describe('Priority order for serving: "weight" or "auction"'),
+        metadata: z.record(z.string()).optional().describe('Custom metadata key-value pairs'),
       },
       handler: async (args) => {
         const data = await client.post('/vast-zones', args as Record<string, unknown>);
@@ -408,8 +407,11 @@ export function vastTools(client: AdButlerClient): ToolDef[] {
       schema: {
         id: z.number().describe('VAST zone ID'),
         name: z.string().optional().describe('Zone name'),
-        width: z.number().optional().describe('Zone width in pixels'),
-        height: z.number().optional().describe('Zone height in pixels'),
+        publisher: z.number().optional().describe('Publisher ID'),
+        default_vast_ad_item: z.number().optional().describe('Default VAST ad item ID (mutually exclusive with default_vast_campaign)'),
+        default_vast_campaign: z.number().optional().describe('Default VAST campaign ID (mutually exclusive with default_vast_ad_item)'),
+        serve_priority_order: z.enum(['weight', 'auction']).optional().describe('Priority order for serving: "weight" or "auction"'),
+        metadata: z.record(z.string()).optional().describe('Custom metadata key-value pairs'),
       },
       handler: async (args) => {
         const { id, ...body } = args;
@@ -509,12 +511,35 @@ export function vastTools(client: AdButlerClient): ToolDef[] {
     },
     {
       name: 'vast_create_placement',
-      description: 'Create a new VAST placement (assign a VAST ad item to a VAST zone)',
+      description: 'Create a new VAST placement (assign a VAST ad item or campaign to a VAST zone or channel)',
       schema: {
-        zone: z.number().describe('VAST zone ID'),
-        ad_item: z.number().describe('VAST ad item ID'),
-        active: z.boolean().optional().describe('Whether placement is active'),
-        weight: z.number().optional().describe('Relative delivery weight'),
+        advertisement: z.object({
+          id: z.number().describe('VAST ad item or campaign ID'),
+          type: z.enum(['vast_ad_item', 'vast_campaign']).describe('Type of advertisement'),
+        }).describe('Advertisement object with id and type'),
+        zone: z.number().optional().describe('VAST zone ID (required if channel not set; mutually exclusive with channel)'),
+        channel: z.number().optional().describe('VAST channel ID (required if zone not set; mutually exclusive with zone)'),
+        schedule: z.number().describe('VAST schedule ID'),
+        active: z.boolean().optional().describe('Whether placement is active (defaults to true)'),
+        cost: z.object({
+          fixed_cost: z.number().optional(),
+          cpm: z.number().optional(),
+          cpc: z.number().optional(),
+          cpa: z.number().optional(),
+        }).optional().describe('Pricing model: fixed_cost OR cpm/cpc/cpa'),
+        payout: z.object({
+          type: z.enum(['rate', 'percent']).optional(),
+          fixed: z.number().optional(),
+          cpm: z.number().optional(),
+          cpc: z.number().optional(),
+          cpa: z.number().optional(),
+        }).optional().describe('Publisher payout configuration'),
+        priority: z.number().optional().describe('Priority level (sponsorship, standard, network, bulk, house)'),
+        max_frequency: z.number().optional().describe('Frequency cap limit'),
+        max_frequency_period: z.number().optional().describe('Days before frequency counter resets'),
+        max_frequency_type: z.enum(['start', 'view', 'firstQuartile', 'midpoint', 'thirdQuartile', 'complete']).optional().describe('Event type to count for frequency capping'),
+        serve_method: z.enum(['weight', 'auction']).optional().describe('Serving system: weight-based or auction-based'),
+        data_key_target_id: z.number().optional().describe('Data Key Target ID (Enterprise only)'),
       },
       handler: async (args) => {
         const data = await client.post('/vast-placements', args as Record<string, unknown>);
@@ -526,8 +551,33 @@ export function vastTools(client: AdButlerClient): ToolDef[] {
       description: 'Update an existing VAST placement',
       schema: {
         id: z.number().describe('VAST placement ID'),
+        advertisement: z.object({
+          id: z.number().describe('VAST ad item or campaign ID'),
+          type: z.enum(['vast_ad_item', 'vast_campaign']).describe('Type of advertisement'),
+        }).optional().describe('Advertisement object with id and type'),
+        zone: z.number().optional().describe('VAST zone ID (mutually exclusive with channel)'),
+        channel: z.number().optional().describe('VAST channel ID (mutually exclusive with zone)'),
+        schedule: z.number().optional().describe('VAST schedule ID'),
         active: z.boolean().optional().describe('Whether placement is active'),
-        weight: z.number().optional().describe('Relative delivery weight'),
+        cost: z.object({
+          fixed_cost: z.number().optional(),
+          cpm: z.number().optional(),
+          cpc: z.number().optional(),
+          cpa: z.number().optional(),
+        }).optional().describe('Pricing model: fixed_cost OR cpm/cpc/cpa'),
+        payout: z.object({
+          type: z.enum(['rate', 'percent']).optional(),
+          fixed: z.number().optional(),
+          cpm: z.number().optional(),
+          cpc: z.number().optional(),
+          cpa: z.number().optional(),
+        }).optional().describe('Publisher payout configuration'),
+        priority: z.number().optional().describe('Priority level'),
+        max_frequency: z.number().optional().describe('Frequency cap limit'),
+        max_frequency_period: z.number().optional().describe('Days before frequency counter resets'),
+        max_frequency_type: z.enum(['start', 'view', 'firstQuartile', 'midpoint', 'thirdQuartile', 'complete']).optional().describe('Event type for frequency capping'),
+        serve_method: z.enum(['weight', 'auction']).optional().describe('Serving system: weight-based or auction-based'),
+        data_key_target_id: z.number().optional().describe('Data Key Target ID (Enterprise only)'),
       },
       handler: async (args) => {
         const { id, ...body } = args;
@@ -572,10 +622,11 @@ export function vastTools(client: AdButlerClient): ToolDef[] {
     },
     {
       name: 'vast_create_campaign_assignment',
-      description: 'Assign a VAST campaign to a VAST zone',
+      description: 'Create a VAST campaign assignment (assign an ad item to a campaign)',
       schema: {
-        zone: z.number().describe('VAST zone ID'),
+        ad_item: z.number().describe('VAST ad item ID'),
         campaign: z.number().describe('VAST campaign ID'),
+        active: z.boolean().optional().describe('Whether to actively serve ads (defaults to true)'),
       },
       handler: async (args) => {
         const data = await client.post('/vast-campaign-assignments', args as Record<string, unknown>);
@@ -587,8 +638,9 @@ export function vastTools(client: AdButlerClient): ToolDef[] {
       description: 'Update a VAST campaign assignment',
       schema: {
         id: z.number().describe('VAST campaign assignment ID'),
-        zone: z.number().optional().describe('VAST zone ID'),
+        ad_item: z.number().optional().describe('VAST ad item ID'),
         campaign: z.number().optional().describe('VAST campaign ID'),
+        active: z.boolean().optional().describe('Whether to actively serve ads'),
       },
       handler: async (args) => {
         const { id, ...body } = args;
@@ -635,13 +687,13 @@ export function vastTools(client: AdButlerClient): ToolDef[] {
       name: 'vast_create_schedule',
       description: 'Create a new VAST schedule for time-based ad delivery',
       schema: {
-        start_date: z.string().optional().describe('Start date (YYYY-MM-DD HH:MM:SS or YYYY-MM-DD)'),
-        end_date: z.string().optional().describe('End date (YYYY-MM-DD HH:MM:SS or YYYY-MM-DD)'),
-        delivery_method: z.enum(['default', 'front_loaded', 'evenly']).optional().describe('Delivery pacing method'),
-        quota_amount: z.number().optional().describe('Delivery quota amount'),
-        quota_type: z.enum(['views', 'clicks', 'conversions']).optional().describe('Quota type'),
-        day_cap_limit: z.number().optional().describe('Daily cap limit'),
-        day_cap_type: z.enum(['views', 'clicks', 'conversions']).optional().describe('Daily cap type'),
+        start_date: z.string().optional().describe('Start date (YYYY-MM-DD HH:MM:SS)'),
+        end_date: z.string().optional().describe('End date (YYYY-MM-DD HH:MM:SS), null for indefinite'),
+        delivery_method: z.enum(['default', 'smooth']).optional().describe('Delivery pacing: "default" (ASAP) or "smooth" (evenly distributed)'),
+        quota_lifetime: z.number().optional().describe('Total quota amount (views or clicks, not per thousand)'),
+        quota_type: z.enum(['views', 'clicks']).optional().describe('Quota measurement type'),
+        geo_target: z.number().optional().describe('Geotarget ID (0 = no targeting)'),
+        day_parting_id: z.number().optional().describe('Day parting ID for time-of-day targeting'),
       },
       handler: async (args) => {
         const data = await client.post('/vast-schedules', args as Record<string, unknown>);
@@ -653,13 +705,13 @@ export function vastTools(client: AdButlerClient): ToolDef[] {
       description: 'Update an existing VAST schedule',
       schema: {
         id: z.number().describe('VAST schedule ID'),
-        start_date: z.string().optional().describe('Start date (YYYY-MM-DD HH:MM:SS or YYYY-MM-DD)'),
-        end_date: z.string().optional().describe('End date (YYYY-MM-DD HH:MM:SS or YYYY-MM-DD)'),
-        delivery_method: z.enum(['default', 'front_loaded', 'evenly']).optional().describe('Delivery pacing method'),
-        quota_amount: z.number().optional().describe('Delivery quota amount'),
-        quota_type: z.enum(['views', 'clicks', 'conversions']).optional().describe('Quota type'),
-        day_cap_limit: z.number().optional().describe('Daily cap limit'),
-        day_cap_type: z.enum(['views', 'clicks', 'conversions']).optional().describe('Daily cap type'),
+        start_date: z.string().optional().describe('Start date (YYYY-MM-DD HH:MM:SS)'),
+        end_date: z.string().optional().describe('End date (YYYY-MM-DD HH:MM:SS), null for indefinite'),
+        delivery_method: z.enum(['default', 'smooth']).optional().describe('Delivery pacing: "default" (ASAP) or "smooth" (evenly distributed)'),
+        quota_lifetime: z.number().optional().describe('Total quota amount (views or clicks, not per thousand)'),
+        quota_type: z.enum(['views', 'clicks']).optional().describe('Quota measurement type'),
+        geo_target: z.number().optional().describe('Geotarget ID (0 = no targeting)'),
+        day_parting_id: z.number().optional().describe('Day parting ID for time-of-day targeting'),
       },
       handler: async (args) => {
         const { id, ...body } = args;
