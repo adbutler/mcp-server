@@ -41,10 +41,19 @@ export function campaignTools(client: AdButlerClient): ToolDef[] {
       description: 'Create a new standard campaign',
       schema: {
         name: z.string().describe('Campaign name'),
-        advertiser: z.number().describe('Advertiser ID'),
-        start_date: z.string().optional().describe('Start date (YYYY-MM-DD)'),
-        end_date: z.string().optional().describe('End date (YYYY-MM-DD)'),
-        active: z.boolean().optional().describe('Whether campaign is active'),
+        advertiser: z.number().optional().describe('Advertiser ID'),
+        contract: z.number().optional().describe('Contract ID (requires Contract Management add-on)'),
+        roadblock_tags: z.string().optional().describe('Tag to link campaign to a roadblock'),
+        targeting_source: z.enum(['CAMPAIGN', 'AD_ITEM']).optional().describe('Whether targeting is set at campaign or ad item level'),
+        scheduling_source: z.enum(['CAMPAIGN', 'AD_ITEM']).optional().describe('Whether scheduling is set at campaign or ad item level'),
+        metadata: z.record(z.string()).optional().describe('Custom metadata key-value pairs'),
+        budget: z.object({
+          daily: z.number().optional(),
+          weekly: z.number().optional(),
+          monthly: z.number().optional(),
+          lifetime: z.number().optional(),
+        }).optional().describe('Budget limits (daily/weekly/monthly/lifetime)'),
+        trusted_redirect_domains: z.array(z.string()).optional().describe('Array of trusted redirect domains'),
       },
       handler: async (args) => {
         const data = await client.post('/campaigns/standard', args as Record<string, unknown>);
@@ -57,9 +66,19 @@ export function campaignTools(client: AdButlerClient): ToolDef[] {
       schema: {
         id: z.number().describe('Campaign ID'),
         name: z.string().optional().describe('Campaign name'),
-        start_date: z.string().optional().describe('Start date (YYYY-MM-DD)'),
-        end_date: z.string().optional().describe('End date (YYYY-MM-DD)'),
-        active: z.boolean().optional().describe('Whether campaign is active'),
+        advertiser: z.number().optional().describe('Advertiser ID'),
+        contract: z.number().optional().describe('Contract ID'),
+        roadblock_tags: z.string().optional().describe('Roadblock tag'),
+        targeting_source: z.enum(['CAMPAIGN', 'AD_ITEM']).optional().describe('Targeting level'),
+        scheduling_source: z.enum(['CAMPAIGN', 'AD_ITEM']).optional().describe('Scheduling level'),
+        metadata: z.record(z.string()).optional().describe('Custom metadata key-value pairs'),
+        budget: z.object({
+          daily: z.number().optional(),
+          weekly: z.number().optional(),
+          monthly: z.number().optional(),
+          lifetime: z.number().optional(),
+        }).optional().describe('Budget limits'),
+        trusted_redirect_domains: z.array(z.string()).optional().describe('Trusted redirect domains'),
       },
       handler: async (args) => {
         const { id, ...body } = args;

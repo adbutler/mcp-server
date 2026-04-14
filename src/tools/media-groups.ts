@@ -29,7 +29,6 @@ export function mediaGroupTools(client: AdButlerClient): ToolDef[] {
       description: 'Create a new media group',
       schema: {
         name: z.string().describe('Media group name'),
-        advertiser: z.number().optional().describe('Advertiser ID'),
       },
       handler: async (args) => {
         const data = await client.post('/media-groups', args as Record<string, unknown>);

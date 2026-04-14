@@ -27,10 +27,9 @@ export function draftTools(client: AdButlerClient): ToolDef[] {
     },
     {
       name: 'draft_create_campaign',
-      description: 'Create a new draft standard campaign',
+      description: 'Create a new draft standard campaign. Fields go inside a "draft" object wrapper.',
       schema: {
-        name: z.string().describe('Campaign name'),
-        advertiser: z.number().describe('Advertiser ID'),
+        draft: z.record(z.unknown()).describe('Object containing standard campaign fields (name, advertiser, etc.)'),
       },
       handler: async (args) => {
         const data = await client.post('/drafts/campaigns/standard', args as Record<string, unknown>);
@@ -42,8 +41,7 @@ export function draftTools(client: AdButlerClient): ToolDef[] {
       description: 'Update an existing draft standard campaign',
       schema: {
         id: z.number().describe('Draft campaign ID'),
-        name: z.string().optional().describe('Campaign name'),
-        advertiser: z.number().optional().describe('Advertiser ID'),
+        draft: z.record(z.unknown()).optional().describe('Object containing standard campaign fields to update'),
       },
       handler: async (args) => {
         const { id, ...body } = args;
@@ -99,7 +97,8 @@ export function draftTools(client: AdButlerClient): ToolDef[] {
       name: 'draft_create_image_ad_item',
       description: 'Create a new draft image ad item',
       schema: {
-        name: z.string().describe('Ad item name'),
+        campaign_draft_id: z.number().describe('Draft campaign ID this ad item belongs to'),
+        draft: z.record(z.unknown()).describe('Object containing image ad item fields (name required)'),
       },
       handler: async (args) => {
         const data = await client.post('/drafts/ad-items/image', args as Record<string, unknown>);
@@ -111,7 +110,7 @@ export function draftTools(client: AdButlerClient): ToolDef[] {
       description: 'Update an existing draft image ad item',
       schema: {
         id: z.number().describe('Draft ad item ID'),
-        name: z.string().optional().describe('Ad item name'),
+        draft: z.record(z.unknown()).optional().describe('Object containing image ad item fields to update'),
       },
       handler: async (args) => {
         const { id, ...body } = args;
@@ -156,7 +155,8 @@ export function draftTools(client: AdButlerClient): ToolDef[] {
       name: 'draft_create_rich_media_ad_item',
       description: 'Create a new draft rich media ad item',
       schema: {
-        name: z.string().describe('Ad item name'),
+        campaign_draft_id: z.number().describe('Draft campaign ID this ad item belongs to'),
+        draft: z.record(z.unknown()).describe('Object containing rich media ad item fields (name required)'),
       },
       handler: async (args) => {
         const data = await client.post('/drafts/ad-items/rich-media', args as Record<string, unknown>);
@@ -168,7 +168,7 @@ export function draftTools(client: AdButlerClient): ToolDef[] {
       description: 'Update an existing draft rich media ad item',
       schema: {
         id: z.number().describe('Draft ad item ID'),
-        name: z.string().optional().describe('Ad item name'),
+        draft: z.record(z.unknown()).optional().describe('Object containing rich media ad item fields to update'),
       },
       handler: async (args) => {
         const { id, ...body } = args;
@@ -213,8 +213,8 @@ export function draftTools(client: AdButlerClient): ToolDef[] {
       name: 'draft_create_custom_html_ad_item',
       description: 'Create a new draft custom HTML ad item',
       schema: {
-        name: z.string().describe('Ad item name'),
-        custom_html: z.string().describe('The HTML content of the ad item'),
+        campaign_draft_id: z.number().describe('Draft campaign ID this ad item belongs to'),
+        draft: z.record(z.unknown()).describe('Object containing custom HTML ad item fields (name, custom_html required)'),
       },
       handler: async (args) => {
         const data = await client.post('/drafts/ad-items/custom-html', args as Record<string, unknown>);
@@ -226,8 +226,7 @@ export function draftTools(client: AdButlerClient): ToolDef[] {
       description: 'Update an existing draft custom HTML ad item',
       schema: {
         id: z.number().describe('Draft ad item ID'),
-        name: z.string().optional().describe('Ad item name'),
-        custom_html: z.string().optional().describe('The HTML content of the ad item'),
+        draft: z.record(z.unknown()).optional().describe('Object containing custom HTML ad item fields to update'),
       },
       handler: async (args) => {
         const { id, ...body } = args;
@@ -272,9 +271,8 @@ export function draftTools(client: AdButlerClient): ToolDef[] {
       name: 'draft_create_native_ad_item',
       description: 'Create a new draft native ad item',
       schema: {
-        name: z.string().describe('Ad item name'),
-        template: z.number().describe('Native template ID'),
-        variables: z.record(z.string()).describe('Template variables as key-value pairs'),
+        campaign_draft_id: z.number().describe('Draft campaign ID this ad item belongs to'),
+        draft: z.record(z.unknown()).describe('Object containing native ad item fields (name required, plus template, variables, etc.)'),
       },
       handler: async (args) => {
         const data = await client.post('/drafts/ad-items/native', args as Record<string, unknown>);
@@ -286,9 +284,7 @@ export function draftTools(client: AdButlerClient): ToolDef[] {
       description: 'Update an existing draft native ad item',
       schema: {
         id: z.number().describe('Draft ad item ID'),
-        name: z.string().optional().describe('Ad item name'),
-        template: z.number().optional().describe('Native template ID'),
-        variables: z.record(z.string()).optional().describe('Template variables as key-value pairs'),
+        draft: z.record(z.unknown()).optional().describe('Object containing native ad item fields to update'),
       },
       handler: async (args) => {
         const { id, ...body } = args;
@@ -333,7 +329,8 @@ export function draftTools(client: AdButlerClient): ToolDef[] {
       name: 'draft_create_catalog_ad_item',
       description: 'Create a new draft catalog ad item',
       schema: {
-        name: z.string().describe('Ad item name'),
+        campaign_draft_id: z.number().describe('Draft campaign ID this ad item belongs to'),
+        draft: z.record(z.unknown()).describe('Object containing catalog ad item fields (name required)'),
       },
       handler: async (args) => {
         const data = await client.post('/drafts/ad-items/catalog', args as Record<string, unknown>);
@@ -345,7 +342,7 @@ export function draftTools(client: AdButlerClient): ToolDef[] {
       description: 'Update an existing draft catalog ad item',
       schema: {
         id: z.number().describe('Draft ad item ID'),
-        name: z.string().optional().describe('Ad item name'),
+        draft: z.record(z.unknown()).optional().describe('Object containing catalog ad item fields to update'),
       },
       handler: async (args) => {
         const { id, ...body } = args;
@@ -388,10 +385,11 @@ export function draftTools(client: AdButlerClient): ToolDef[] {
     },
     {
       name: 'draft_create_campaign_assignment',
-      description: 'Create a new draft campaign assignment (assign a campaign to a zone)',
+      description: 'Create a new draft campaign assignment',
       schema: {
-        zone: z.number().describe('Zone ID'),
-        campaign: z.number().describe('Campaign ID'),
+        campaign_draft_id: z.number().describe('Draft campaign ID this assignment belongs to'),
+        ad_item_draft_id: z.number().describe('Draft ad item ID this assignment references'),
+        draft: z.record(z.unknown()).optional().describe('Object containing campaign assignment fields (campaign and advertisement auto-resolved)'),
       },
       handler: async (args) => {
         const data = await client.post('/drafts/campaign-assignments', args as Record<string, unknown>);
@@ -403,8 +401,7 @@ export function draftTools(client: AdButlerClient): ToolDef[] {
       description: 'Update an existing draft campaign assignment',
       schema: {
         id: z.number().describe('Draft campaign assignment ID'),
-        zone: z.number().optional().describe('Zone ID'),
-        campaign: z.number().optional().describe('Campaign ID'),
+        draft: z.record(z.unknown()).optional().describe('Object containing campaign assignment fields to update'),
       },
       handler: async (args) => {
         const { id, ...body } = args;
@@ -447,10 +444,10 @@ export function draftTools(client: AdButlerClient): ToolDef[] {
     },
     {
       name: 'draft_create_placement',
-      description: 'Create a new draft placement (assign an ad item to a zone)',
+      description: 'Create a new draft placement',
       schema: {
-        zone: z.number().describe('Zone ID'),
-        ad_item: z.number().describe('Ad item ID'),
+        campaign_draft_id: z.number().describe('Draft campaign ID this placement belongs to'),
+        draft: z.record(z.unknown()).describe('Object containing placement fields (zone, advertisement, etc.)'),
       },
       handler: async (args) => {
         const data = await client.post('/drafts/placements', args as Record<string, unknown>);
@@ -462,8 +459,7 @@ export function draftTools(client: AdButlerClient): ToolDef[] {
       description: 'Update an existing draft placement',
       schema: {
         id: z.number().describe('Draft placement ID'),
-        zone: z.number().optional().describe('Zone ID'),
-        ad_item: z.number().optional().describe('Ad item ID'),
+        draft: z.record(z.unknown()).optional().describe('Object containing placement fields to update'),
       },
       handler: async (args) => {
         const { id, ...body } = args;
@@ -507,7 +503,10 @@ export function draftTools(client: AdButlerClient): ToolDef[] {
     {
       name: 'draft_create_schedule',
       description: 'Create a new draft schedule',
-      schema: {},
+      schema: {
+        campaign_draft_id: z.number().describe('Draft campaign ID this schedule belongs to'),
+        draft: z.record(z.unknown()).describe('Object containing schedule fields'),
+      },
       handler: async (args) => {
         const data = await client.post('/drafts/schedules', args as Record<string, unknown>);
         return JSON.stringify(data, null, 2);
@@ -518,6 +517,7 @@ export function draftTools(client: AdButlerClient): ToolDef[] {
       description: 'Update an existing draft schedule',
       schema: {
         id: z.number().describe('Draft schedule ID'),
+        draft: z.record(z.unknown()).optional().describe('Object containing schedule fields to update'),
       },
       handler: async (args) => {
         const { id, ...body } = args;

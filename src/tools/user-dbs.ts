@@ -29,7 +29,8 @@ export function userDbTools(client: AdButlerClient): ToolDef[] {
       name: 'create_user_db',
       description: 'Create a new user database',
       schema: {
-        name: z.string().describe('User database name'),
+        name: z.string().optional().describe('User database name'),
+        id_field_name: z.string().optional().describe('Name of the field to use as primary user identifier'),
       },
       handler: async (args) => {
         const data = await client.post('/user-dbs', args as Record<string, unknown>);
@@ -67,7 +68,9 @@ export function userDbTools(client: AdButlerClient): ToolDef[] {
       description: 'Create a new user attribute in a user database',
       schema: {
         user_db_id: z.number().describe('User database ID'),
-        name: z.string().describe('User attribute name'),
+        id: z.string().optional().describe('Field name in the user data (e.g. "signup_datetime")'),
+        label: z.string().optional().describe('Descriptive label for the field'),
+        type: z.enum(['number', 'phone_number', 'email', 'text', 'date_time', 'timestamp']).optional().describe('Data type of the field'),
       },
       handler: async (args) => {
         const { user_db_id, ...body } = args;
@@ -81,7 +84,8 @@ export function userDbTools(client: AdButlerClient): ToolDef[] {
       schema: {
         user_db_id: z.number().describe('User database ID'),
         id: z.number().describe('User attribute ID'),
-        name: z.string().optional().describe('User attribute name'),
+        label: z.string().optional().describe('Descriptive label for the field'),
+        type: z.enum(['number', 'phone_number', 'email', 'text', 'date_time', 'timestamp']).optional().describe('Data type of the field'),
       },
       handler: async (args) => {
         const { user_db_id, id, ...body } = args;
@@ -132,7 +136,11 @@ export function userDbTools(client: AdButlerClient): ToolDef[] {
       description: 'Create a new audience in a user database',
       schema: {
         user_db_id: z.number().describe('User database ID'),
-        name: z.string().describe('Audience name'),
+        name: z.string().optional().describe('Audience name'),
+        attributes: z.record(z.object({
+          operator: z.string().describe('Comparison operator (e.g. "=", ">=", "<=", "!=")'),
+          operand: z.string().describe('Value to compare against'),
+        })).optional().describe('Attribute targets defining the audience (e.g. { "gender": { "operator": "=", "operand": "male" } })'),
       },
       handler: async (args) => {
         const { user_db_id, ...body } = args;
@@ -147,6 +155,10 @@ export function userDbTools(client: AdButlerClient): ToolDef[] {
         user_db_id: z.number().describe('User database ID'),
         id: z.number().describe('Audience ID'),
         name: z.string().optional().describe('Audience name'),
+        attributes: z.record(z.object({
+          operator: z.string().describe('Comparison operator'),
+          operand: z.string().describe('Value to compare against'),
+        })).optional().describe('Attribute targets defining the audience'),
       },
       handler: async (args) => {
         const { user_db_id, id, ...body } = args;

@@ -38,13 +38,11 @@ export function creativeTools(client: AdButlerClient): ToolDef[] {
     },
     {
       name: 'create_creative',
-      description: 'Create a new image creative. Note: the image file must be uploaded separately or referenced by URL.',
+      description: 'Create a new image creative. The API uses multipart file upload — pass the media group ID and file attributes.',
       schema: {
-        name: z.string().describe('Creative name'),
-        advertiser: z.number().describe('Advertiser ID'),
-        image_url: z.string().optional().describe('URL of the image to use'),
-        width: z.number().optional().describe('Image width in pixels'),
-        height: z.number().optional().describe('Image height in pixels'),
+        group: z.number().describe('Media group ID'),
+        name: z.string().optional().describe('Creative name'),
+        description: z.string().optional().describe('Creative description'),
       },
       handler: async (args) => {
         const data = await client.post('/creatives/image', args as Record<string, unknown>);
@@ -57,7 +55,7 @@ export function creativeTools(client: AdButlerClient): ToolDef[] {
       schema: {
         id: z.number().describe('Creative ID'),
         name: z.string().optional().describe('Creative name'),
-        image_url: z.string().optional().describe('URL of the image to use'),
+        description: z.string().optional().describe('Creative description'),
       },
       handler: async (args) => {
         const { id, ...body } = args;
@@ -100,13 +98,12 @@ export function creativeTools(client: AdButlerClient): ToolDef[] {
     },
     {
       name: 'create_rich_media_creative',
-      description: 'Create a new rich media creative',
+      description: 'Create a new rich media creative. The API uses multipart file upload (ZIP for HTML5).',
       schema: {
-        name: z.string().describe('Creative name'),
-        advertiser: z.number().describe('Advertiser ID'),
-        file_url: z.string().optional().describe('URL of the rich media file (HTML5, SWF, etc.)'),
-        width: z.number().optional().describe('Width in pixels'),
-        height: z.number().optional().describe('Height in pixels'),
+        group: z.number().describe('Media group ID'),
+        name: z.string().optional().describe('Creative name'),
+        description: z.string().optional().describe('Creative description'),
+        index_file_path: z.string().optional().describe('Path to index HTML file inside ZIP archive (for HTML5)'),
       },
       handler: async (args) => {
         const data = await client.post('/creatives/rich-media', args as Record<string, unknown>);
@@ -119,7 +116,7 @@ export function creativeTools(client: AdButlerClient): ToolDef[] {
       schema: {
         id: z.number().describe('Creative ID'),
         name: z.string().optional().describe('Creative name'),
-        file_url: z.string().optional().describe('URL of the rich media file'),
+        description: z.string().optional().describe('Creative description'),
       },
       handler: async (args) => {
         const { id, ...body } = args;
@@ -162,14 +159,11 @@ export function creativeTools(client: AdButlerClient): ToolDef[] {
     },
     {
       name: 'create_video_creative',
-      description: 'Create a new video creative',
+      description: 'Create a new video creative. The API uses multipart file upload.',
       schema: {
-        name: z.string().describe('Creative name'),
-        advertiser: z.number().describe('Advertiser ID'),
-        file_url: z.string().optional().describe('URL of the video file'),
-        width: z.number().optional().describe('Video width in pixels'),
-        height: z.number().optional().describe('Video height in pixels'),
-        duration: z.number().optional().describe('Video duration in seconds'),
+        group: z.number().describe('Media group ID'),
+        name: z.string().optional().describe('Creative name'),
+        description: z.string().optional().describe('Creative description'),
       },
       handler: async (args) => {
         const data = await client.post('/creatives/video', args as Record<string, unknown>);
@@ -182,7 +176,7 @@ export function creativeTools(client: AdButlerClient): ToolDef[] {
       schema: {
         id: z.number().describe('Creative ID'),
         name: z.string().optional().describe('Creative name'),
-        file_url: z.string().optional().describe('URL of the video file'),
+        description: z.string().optional().describe('Creative description'),
       },
       handler: async (args) => {
         const { id, ...body } = args;
@@ -225,12 +219,11 @@ export function creativeTools(client: AdButlerClient): ToolDef[] {
     },
     {
       name: 'create_audio_creative',
-      description: 'Create a new audio creative',
+      description: 'Create a new audio creative. The API uses multipart file upload.',
       schema: {
-        name: z.string().describe('Creative name'),
-        advertiser: z.number().describe('Advertiser ID'),
-        file_url: z.string().optional().describe('URL of the audio file'),
-        duration: z.number().optional().describe('Audio duration in seconds'),
+        group: z.number().describe('Media group ID'),
+        name: z.string().optional().describe('Creative name'),
+        description: z.string().optional().describe('Creative description'),
       },
       handler: async (args) => {
         const data = await client.post('/creatives/audio', args as Record<string, unknown>);
@@ -243,7 +236,7 @@ export function creativeTools(client: AdButlerClient): ToolDef[] {
       schema: {
         id: z.number().describe('Creative ID'),
         name: z.string().optional().describe('Creative name'),
-        file_url: z.string().optional().describe('URL of the audio file'),
+        description: z.string().optional().describe('Creative description'),
       },
       handler: async (args) => {
         const { id, ...body } = args;

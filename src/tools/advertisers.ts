@@ -31,7 +31,9 @@ export function advertiserTools(client: AdButlerClient): ToolDef[] {
         name: z.string().describe('Advertiser name'),
         email: z.string().optional().describe('Contact email'),
         can_change_password: z.boolean().optional().describe('Whether advertiser can change password'),
-        can_add_creatives: z.boolean().optional().describe('Whether advertiser can add creatives'),
+        can_add_ad_items: z.boolean().optional().describe('Whether advertiser can submit advertisements for scheduling'),
+        metadata: z.record(z.string()).optional().describe('Custom metadata key-value pairs'),
+        password: z.string().optional().describe('Password for advertiser portal (min 8 chars, must include upper, lower, number)'),
       },
       handler: async (args) => {
         const data = await client.post('/advertisers', args as Record<string, unknown>);
@@ -46,7 +48,9 @@ export function advertiserTools(client: AdButlerClient): ToolDef[] {
         name: z.string().optional().describe('Advertiser name'),
         email: z.string().optional().describe('Contact email'),
         can_change_password: z.boolean().optional().describe('Whether advertiser can change password'),
-        can_add_creatives: z.boolean().optional().describe('Whether advertiser can add creatives'),
+        can_add_ad_items: z.boolean().optional().describe('Whether advertiser can submit advertisements for scheduling'),
+        metadata: z.record(z.string()).optional().describe('Custom metadata key-value pairs'),
+        password: z.string().optional().describe('Password for advertiser portal (min 8 chars, must include upper, lower, number)'),
       },
       handler: async (args) => {
         const { id, ...body } = args;

@@ -29,9 +29,22 @@ export function publisherTools(client: AdButlerClient): ToolDef[] {
       description: 'Create a new publisher',
       schema: {
         name: z.string().describe('Publisher name'),
-        timezone: z.string().describe('Timezone (e.g., "America/New_York", "Europe/London", "America/Los_Angeles")'),
-        email: z.string().optional().describe('Contact email'),
+        timezone: z.string().optional().describe('Timezone (e.g., "America/New_York")'),
+        email: z.string().optional().describe('Contact email (allows publisher to log in)'),
         can_change_password: z.boolean().optional().describe('Whether publisher can change password'),
+        can_admin_account: z.boolean().optional().describe('Grant administrator privileges'),
+        can_approve_ads: z.boolean().optional().describe('Allow publisher to approve/deny ad items'),
+        can_view_wordpress_key: z.boolean().optional().describe('Allow publisher to view WordPress key'),
+        domain: z.string().optional().describe('Publisher domain (top-level domains only)'),
+        seller_type: z.enum(['publisher', 'intermediary', 'both']).optional().describe('Seller type for ads.txt'),
+        default_payout: z.object({
+          type: z.enum(['rate', 'percent']).optional(),
+          fixed: z.number().optional(),
+          cpm: z.number().optional(),
+          cpc: z.number().optional(),
+          cpa: z.number().optional(),
+        }).optional().describe('Default payout configuration'),
+        metadata: z.record(z.string()).optional().describe('Custom metadata key-value pairs'),
       },
       handler: async (args) => {
         const data = await client.post('/publishers', args as Record<string, unknown>);
@@ -44,8 +57,22 @@ export function publisherTools(client: AdButlerClient): ToolDef[] {
       schema: {
         id: z.number().describe('Publisher ID'),
         name: z.string().optional().describe('Publisher name'),
+        timezone: z.string().optional().describe('Timezone'),
         email: z.string().optional().describe('Contact email'),
         can_change_password: z.boolean().optional().describe('Whether publisher can change password'),
+        can_admin_account: z.boolean().optional().describe('Grant administrator privileges'),
+        can_approve_ads: z.boolean().optional().describe('Allow publisher to approve/deny ad items'),
+        can_view_wordpress_key: z.boolean().optional().describe('Allow publisher to view WordPress key'),
+        domain: z.string().optional().describe('Publisher domain'),
+        seller_type: z.enum(['publisher', 'intermediary', 'both']).optional().describe('Seller type'),
+        default_payout: z.object({
+          type: z.enum(['rate', 'percent']).optional(),
+          fixed: z.number().optional(),
+          cpm: z.number().optional(),
+          cpc: z.number().optional(),
+          cpa: z.number().optional(),
+        }).optional().describe('Default payout configuration'),
+        metadata: z.record(z.string()).optional().describe('Custom metadata key-value pairs'),
       },
       handler: async (args) => {
         const { id, ...body } = args;

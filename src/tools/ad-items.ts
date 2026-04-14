@@ -41,15 +41,18 @@ export function adItemTools(client: AdButlerClient): ToolDef[] {
       description: 'Create a new image ad item (banner)',
       schema: {
         name: z.string().describe('Ad item name'),
-        campaign: z.number().describe('Campaign ID this ad item belongs to'),
-        creative: z.number().describe('Creative ID to use'),
-        location: z.string().describe('Click-through URL'),
-        width: z.number().optional().describe('Ad width in pixels'),
-        height: z.number().optional().describe('Ad height in pixels'),
-        active: z.boolean().optional().describe('Whether ad item is active'),
-        weight: z.number().optional().describe('Relative delivery weight'),
-        cap: z.number().optional().describe('Impression cap (0 = unlimited)'),
+        creative: z.number().optional().describe('Image creative ID (mutually exclusive with creative_url)'),
+        creative_url: z.string().optional().describe('URL to image file — PNG, JPEG, or GIF (mutually exclusive with creative)'),
+        location: z.string().optional().describe('Click-through URL'),
+        width: z.number().optional().describe('Ad width in pixels (defaults to 0)'),
+        height: z.number().optional().describe('Ad height in pixels (defaults to 0)'),
+        html_alt_text: z.string().optional().describe('Alt text for the image'),
+        html_target: z.string().optional().describe('Window/frame for destination URL (e.g. "_blank")'),
+        html_content_below: z.string().optional().describe('HTML content below the ad item'),
         tracking_pixel: z.string().optional().describe('Third-party tracking pixel URL'),
+        tracking_pixels: z.array(z.string()).optional().describe('Array of tracking pixel URLs'),
+        metadata: z.record(z.string()).optional().describe('Custom metadata key-value pairs'),
+        trusted_redirect_domains: z.array(z.string()).optional().describe('Trusted redirect domains'),
       },
       handler: async (args) => {
         const data = await client.post('/ad-items/image', args as Record<string, unknown>);
@@ -62,11 +65,18 @@ export function adItemTools(client: AdButlerClient): ToolDef[] {
       schema: {
         id: z.number().describe('Ad item ID'),
         name: z.string().optional().describe('Ad item name'),
+        creative: z.number().optional().describe('Image creative ID'),
+        creative_url: z.string().optional().describe('URL to image file'),
         location: z.string().optional().describe('Click-through URL'),
-        active: z.boolean().optional().describe('Whether ad item is active'),
-        weight: z.number().optional().describe('Relative delivery weight'),
-        cap: z.number().optional().describe('Impression cap (0 = unlimited)'),
+        width: z.number().optional().describe('Ad width in pixels'),
+        height: z.number().optional().describe('Ad height in pixels'),
+        html_alt_text: z.string().optional().describe('Alt text for the image'),
+        html_target: z.string().optional().describe('Window/frame for destination URL'),
+        html_content_below: z.string().optional().describe('HTML content below the ad item'),
         tracking_pixel: z.string().optional().describe('Third-party tracking pixel URL'),
+        tracking_pixels: z.array(z.string()).optional().describe('Array of tracking pixel URLs'),
+        metadata: z.record(z.string()).optional().describe('Custom metadata key-value pairs'),
+        trusted_redirect_domains: z.array(z.string()).optional().describe('Trusted redirect domains'),
       },
       handler: async (args) => {
         const { id, ...body } = args;
@@ -127,8 +137,13 @@ export function adItemTools(client: AdButlerClient): ToolDef[] {
         location: z.string().optional().describe('Click-through URL'),
         width: z.number().optional().describe('Ad width in pixels (0 for flexible)'),
         height: z.number().optional().describe('Ad height in pixels (0 for flexible)'),
-        tracking_pixel: z.string().optional().describe('Third-party tracking pixel URL'),
         html_content_below: z.string().optional().describe('HTML content below the ad item'),
+        expand_horizontal_direction: z.enum(['none', 'left', 'right']).optional().describe('Horizontal expand direction'),
+        expand_vertical_direction: z.enum(['none', 'up', 'down']).optional().describe('Vertical expand direction'),
+        tracking_pixel: z.string().optional().describe('Third-party tracking pixel URL'),
+        tracking_pixels: z.array(z.string()).optional().describe('Array of tracking pixel URLs'),
+        metadata: z.record(z.string()).optional().describe('Custom metadata key-value pairs'),
+        trusted_redirect_domains: z.array(z.string()).optional().describe('Trusted redirect domains'),
       },
       handler: async (args) => {
         const data = await client.post('/ad-items/custom-html', args as Record<string, unknown>);
@@ -145,8 +160,13 @@ export function adItemTools(client: AdButlerClient): ToolDef[] {
         location: z.string().optional().describe('Click-through URL'),
         width: z.number().optional().describe('Ad width in pixels'),
         height: z.number().optional().describe('Ad height in pixels'),
-        tracking_pixel: z.string().optional().describe('Third-party tracking pixel URL'),
         html_content_below: z.string().optional().describe('HTML content below the ad item'),
+        expand_horizontal_direction: z.enum(['none', 'left', 'right']).optional().describe('Horizontal expand direction'),
+        expand_vertical_direction: z.enum(['none', 'up', 'down']).optional().describe('Vertical expand direction'),
+        tracking_pixel: z.string().optional().describe('Third-party tracking pixel URL'),
+        tracking_pixels: z.array(z.string()).optional().describe('Array of tracking pixel URLs'),
+        metadata: z.record(z.string()).optional().describe('Custom metadata key-value pairs'),
+        trusted_redirect_domains: z.array(z.string()).optional().describe('Trusted redirect domains'),
       },
       handler: async (args) => {
         const { id, ...body } = args;
@@ -207,10 +227,13 @@ export function adItemTools(client: AdButlerClient): ToolDef[] {
         location: z.string().optional().describe('Click-through URL'),
         width: z.number().optional().describe('Ad width in pixels'),
         height: z.number().optional().describe('Ad height in pixels'),
-        tracking_pixel: z.string().optional().describe('Third-party tracking pixel URL'),
         html_content_below: z.string().optional().describe('HTML content below the ad item'),
-        expand_horizontal_direction: z.string().optional().describe('Horizontal expand direction (left/right/none)'),
-        expand_vertical_direction: z.string().optional().describe('Vertical expand direction (up/down/none)'),
+        expand_horizontal_direction: z.enum(['none', 'left', 'right']).optional().describe('Horizontal expand direction'),
+        expand_vertical_direction: z.enum(['none', 'up', 'down']).optional().describe('Vertical expand direction'),
+        tracking_pixel: z.string().optional().describe('Third-party tracking pixel URL'),
+        tracking_pixels: z.array(z.string()).optional().describe('Array of tracking pixel URLs'),
+        metadata: z.record(z.string()).optional().describe('Custom metadata key-value pairs'),
+        trusted_redirect_domains: z.array(z.string()).optional().describe('Trusted redirect domains'),
       },
       handler: async (args) => {
         const data = await client.post('/ad-items/rich-media', args as Record<string, unknown>);
@@ -225,10 +248,13 @@ export function adItemTools(client: AdButlerClient): ToolDef[] {
         name: z.string().optional().describe('Ad item name'),
         creative: z.number().optional().describe('Rich media creative ID'),
         location: z.string().optional().describe('Click-through URL'),
-        tracking_pixel: z.string().optional().describe('Third-party tracking pixel URL'),
         html_content_below: z.string().optional().describe('HTML content below the ad item'),
-        expand_horizontal_direction: z.string().optional().describe('Horizontal expand direction'),
-        expand_vertical_direction: z.string().optional().describe('Vertical expand direction'),
+        expand_horizontal_direction: z.enum(['none', 'left', 'right']).optional().describe('Horizontal expand direction'),
+        expand_vertical_direction: z.enum(['none', 'up', 'down']).optional().describe('Vertical expand direction'),
+        tracking_pixel: z.string().optional().describe('Third-party tracking pixel URL'),
+        tracking_pixels: z.array(z.string()).optional().describe('Array of tracking pixel URLs'),
+        metadata: z.record(z.string()).optional().describe('Custom metadata key-value pairs'),
+        trusted_redirect_domains: z.array(z.string()).optional().describe('Trusted redirect domains'),
       },
       handler: async (args) => {
         const { id, ...body } = args;
@@ -286,11 +312,14 @@ export function adItemTools(client: AdButlerClient): ToolDef[] {
       schema: {
         name: z.string().describe('Ad item name'),
         template: z.number().describe('Native template ID'),
-        variables: z.record(z.string()).describe('Template variables as key-value pairs'),
+        variables: z.record(z.string()).describe('Template variables as key-value pairs (keys should be integer strings)'),
         location: z.string().optional().describe('Click-through URL'),
         width: z.number().optional().describe('Ad width in pixels'),
         height: z.number().optional().describe('Ad height in pixels'),
         tracking_pixel: z.string().optional().describe('Third-party tracking pixel URL'),
+        tracking_pixels: z.array(z.string()).optional().describe('Array of tracking pixel URLs'),
+        metadata: z.record(z.string()).optional().describe('Custom metadata key-value pairs'),
+        trusted_redirect_domains: z.array(z.string()).optional().describe('Trusted redirect domains'),
       },
       handler: async (args) => {
         const data = await client.post('/ad-items/native', args as Record<string, unknown>);
@@ -307,6 +336,9 @@ export function adItemTools(client: AdButlerClient): ToolDef[] {
         variables: z.record(z.string()).optional().describe('Template variables as key-value pairs'),
         location: z.string().optional().describe('Click-through URL'),
         tracking_pixel: z.string().optional().describe('Third-party tracking pixel URL'),
+        tracking_pixels: z.array(z.string()).optional().describe('Array of tracking pixel URLs'),
+        metadata: z.record(z.string()).optional().describe('Custom metadata key-value pairs'),
+        trusted_redirect_domains: z.array(z.string()).optional().describe('Trusted redirect domains'),
       },
       handler: async (args) => {
         const { id, ...body } = args;
@@ -363,12 +395,33 @@ export function adItemTools(client: AdButlerClient): ToolDef[] {
       description: 'Create a new catalog ad item',
       schema: {
         name: z.string().describe('Ad item name'),
-        catalog_item: z.number().describe('Product catalog item ID'),
+        catalog_id: z.number().describe('Catalog ID'),
+        catalog_item_identifier: z.string().describe('Unique identifier for the catalog item'),
         location: z.string().optional().describe('Click-through URL'),
         tracking_pixel: z.string().optional().describe('Third-party tracking pixel URL'),
+        tracking_pixels: z.array(z.string()).optional().describe('Array of tracking pixel URLs'),
+        metadata: z.record(z.string()).optional().describe('Custom metadata key-value pairs'),
       },
       handler: async (args) => {
         const data = await client.post('/ad-items/catalog-item', args as Record<string, unknown>);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'update_catalog_ad_item',
+      description: 'Update an existing catalog ad item',
+      schema: {
+        id: z.number().describe('Ad item ID'),
+        name: z.string().optional().describe('Ad item name'),
+        catalog_item_identifier: z.string().optional().describe('Unique identifier for the catalog item'),
+        location: z.string().optional().describe('Click-through URL'),
+        tracking_pixel: z.string().optional().describe('Third-party tracking pixel URL'),
+        tracking_pixels: z.array(z.string()).optional().describe('Array of tracking pixel URLs'),
+        metadata: z.record(z.string()).optional().describe('Custom metadata key-value pairs'),
+      },
+      handler: async (args) => {
+        const { id, ...body } = args;
+        const data = await client.put(`/ad-items/catalog-item/${id}`, body as Record<string, unknown>);
         return JSON.stringify(data, null, 2);
       },
     },

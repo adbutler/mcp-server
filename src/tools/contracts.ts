@@ -31,6 +31,12 @@ export function contractTools(client: AdButlerClient): ToolDef[] {
       schema: {
         name: z.string().describe('Contract name'),
         advertiser: z.number().describe('Advertiser ID'),
+        description: z.string().optional().describe('Contract description'),
+        rate: z.number().optional().describe('Contract rate (in account currency)'),
+        payment_due_date: z.string().optional().describe('Payment due date (YYYY-MM-DD)'),
+        start_at: z.string().optional().describe('Contract start date (YYYY-MM-DD)'),
+        end_at: z.string().optional().describe('Contract end date (YYYY-MM-DD)'),
+        status: z.enum(['open', 'terminated', 'fulfilled', 'closed']).optional().describe('Contract status'),
       },
       handler: async (args) => {
         const data = await client.post('/contracts', args as Record<string, unknown>);
@@ -43,6 +49,13 @@ export function contractTools(client: AdButlerClient): ToolDef[] {
       schema: {
         id: z.number().describe('Contract ID'),
         name: z.string().optional().describe('Contract name'),
+        advertiser: z.number().optional().describe('Advertiser ID'),
+        description: z.string().optional().describe('Contract description'),
+        rate: z.number().optional().describe('Contract rate'),
+        payment_due_date: z.string().optional().describe('Payment due date (YYYY-MM-DD)'),
+        start_at: z.string().optional().describe('Contract start date (YYYY-MM-DD)'),
+        end_at: z.string().optional().describe('Contract end date (YYYY-MM-DD)'),
+        status: z.enum(['open', 'terminated', 'fulfilled', 'closed']).optional().describe('Contract status'),
       },
       handler: async (args) => {
         const { id, ...body } = args;
@@ -117,10 +130,11 @@ export function contractTools(client: AdButlerClient): ToolDef[] {
     },
     {
       name: 'create_contract_template',
-      description: 'Create a new contract template',
+      description: 'Create a new contract template. Requires name, file, attributes (JSON string), email_subject, and email_body.',
       schema: {
         name: z.string().describe('Template name'),
         file: z.string().describe('URL or path to the contract template file'),
+        attributes: z.string().describe('JSON-encoded object containing name, email_subject, email_body, and optionally signing_service, basic_inputs, contract_column_inputs, signers'),
         email_subject: z.string().describe('Email subject line when sending for signature'),
         email_body: z.string().describe('Email body text when sending for signature'),
       },
@@ -185,7 +199,7 @@ export function contractTools(client: AdButlerClient): ToolDef[] {
       description: 'Create a new document for a contract',
       schema: {
         contract_id: z.number().describe('Contract ID'),
-        name: z.string().describe('Document name'),
+        attributes: z.string().optional().describe('JSON-encoded object with name, admin_executed, vendor_executed fields'),
       },
       handler: async (args) => {
         const { contract_id, ...body } = args;
@@ -251,6 +265,8 @@ export function contractTools(client: AdButlerClient): ToolDef[] {
       description: 'Create a new payment for a contract',
       schema: {
         contract_id: z.number().describe('Contract ID'),
+        amount: z.number().describe('Amount paid (can be negative for refunds)'),
+        note: z.string().optional().describe('Payment note or description'),
       },
       handler: async (args) => {
         const { contract_id, ...body } = args;

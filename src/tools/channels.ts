@@ -30,7 +30,8 @@ export function channelTools(client: AdButlerClient): ToolDef[] {
       description: 'Create a new channel',
       schema: {
         name: z.string().describe('Channel name'),
-        description: z.string().optional().describe('Channel description'),
+        priority: z.enum(['sponsorship', 'standard', 'network', 'bulk', 'house']).optional().describe('Serving priority (default: standard)'),
+        use_share_of_voice: z.boolean().optional().describe('Whether to use share of voice as serving strategy (false = use weight)'),
       },
       handler: async (args) => {
         const data = await client.post('/channels', args as Record<string, unknown>);
@@ -43,7 +44,7 @@ export function channelTools(client: AdButlerClient): ToolDef[] {
       schema: {
         id: z.number().describe('Channel ID'),
         name: z.string().optional().describe('Channel name'),
-        description: z.string().optional().describe('Channel description'),
+        priority: z.enum(['sponsorship', 'standard', 'network', 'bulk', 'house']).optional().describe('Serving priority'),
       },
       handler: async (args) => {
         const { id, ...body } = args;
@@ -144,7 +145,10 @@ export function channelTools(client: AdButlerClient): ToolDef[] {
       description: 'Assign a zone to a channel',
       schema: {
         channel: z.number().describe('Channel ID'),
-        zone: z.number().describe('Zone ID'),
+        zone: z.object({
+          id: z.number().describe('Zone ID'),
+          type: z.enum(['standard_zone', 'email_zone']).optional().describe('Zone type (default: standard_zone)'),
+        }).describe('Zone object with id and type'),
       },
       handler: async (args) => {
         const data = await client.post('/channel-zone-assignments', args as Record<string, unknown>);

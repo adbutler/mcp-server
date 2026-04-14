@@ -29,8 +29,8 @@ export function targetingTools(client: AdButlerClient): ToolDef[] {
       name: 'create_data_key',
       description: 'Create a new data key for custom targeting',
       schema: {
-        name: z.string().describe('Data key name'),
-        type: z.enum(['STRING', 'ARRAY', 'INTEGER', 'FLOAT']).optional().describe('Data key value type (default STRING)'),
+        name: z.string().describe('Data key name (max 32 chars, must be unique)'),
+        type: z.enum(['STRING', 'NUMBER', 'DATE', 'DATETIME', 'TIME']).describe('Data key value type'),
       },
       handler: async (args) => {
         const data = await client.post('/data-keys', args as Record<string, unknown>);
@@ -43,7 +43,7 @@ export function targetingTools(client: AdButlerClient): ToolDef[] {
       schema: {
         id: z.number().describe('Data key ID'),
         name: z.string().optional().describe('Data key name'),
-        type: z.enum(['STRING', 'ARRAY', 'INTEGER', 'FLOAT']).optional().describe('Data key value type'),
+        type: z.enum(['STRING', 'NUMBER', 'DATE', 'DATETIME', 'TIME']).optional().describe('Data key value type'),
       },
       handler: async (args) => {
         const { id, ...body } = args;
@@ -88,9 +88,8 @@ export function targetingTools(client: AdButlerClient): ToolDef[] {
       name: 'create_data_key_target',
       description: 'Create a new data key target (targeting rule)',
       schema: {
-        data_key: z.number().describe('Data key ID'),
-        value: z.string().describe('Target value to match'),
-        comparison: z.string().optional().describe('Comparison operator (e.g., "equals", "contains", "regex")'),
+        name: z.string().describe('Data key target name'),
+        target: z.string().describe('JSON formatted target logic, e.g. ["OR", {"my_number": {"=": "5"}}, {"my_string": {"=": "test"}}]'),
       },
       handler: async (args) => {
         const data = await client.post('/data-key-targets', args as Record<string, unknown>);
@@ -102,8 +101,8 @@ export function targetingTools(client: AdButlerClient): ToolDef[] {
       description: 'Update an existing data key target',
       schema: {
         id: z.number().describe('Data key target ID'),
-        value: z.string().optional().describe('Target value'),
-        comparison: z.string().optional().describe('Comparison operator'),
+        name: z.string().optional().describe('Data key target name'),
+        target: z.string().optional().describe('JSON formatted target logic'),
       },
       handler: async (args) => {
         const { id, ...body } = args;
@@ -146,10 +145,12 @@ export function targetingTools(client: AdButlerClient): ToolDef[] {
     },
     {
       name: 'create_day_parting',
-      description: 'Create a new day parting rule for time-of-day targeting',
+      description: 'Create a new day parting rule for time-of-day targeting. Ranges is an object with day names as keys and arrays of time range strings (e.g. "09:00:00-17:00:00") as values.',
       schema: {
-        name: z.string().describe('Day parting name'),
-        timezone: z.string().optional().describe('Timezone (e.g., "America/New_York")'),
+        name: z.string().optional().describe('Day parting name'),
+        use_member_timezone: z.boolean().optional().describe('If true, use account timezone; if false, use viewer timezone'),
+        is_template: z.boolean().optional().describe('If true, shown in UI when creating/editing schedules'),
+        ranges: z.record(z.array(z.string())).optional().describe('Object mapping day names (monday-sunday) to arrays of time ranges like "09:00:00-17:00:00"'),
       },
       handler: async (args) => {
         const data = await client.post('/day-parting', args as Record<string, unknown>);
@@ -162,7 +163,9 @@ export function targetingTools(client: AdButlerClient): ToolDef[] {
       schema: {
         id: z.number().describe('Day parting ID'),
         name: z.string().optional().describe('Day parting name'),
-        timezone: z.string().optional().describe('Timezone'),
+        use_member_timezone: z.boolean().optional().describe('If true, use account timezone; if false, use viewer timezone'),
+        is_template: z.boolean().optional().describe('If true, shown in UI when creating/editing schedules'),
+        ranges: z.record(z.array(z.string())).optional().describe('Object mapping day names (monday-sunday) to arrays of time ranges'),
       },
       handler: async (args) => {
         const { id, ...body } = args;
@@ -205,17 +208,17 @@ export function targetingTools(client: AdButlerClient): ToolDef[] {
     },
     {
       name: 'create_geo_target',
-      description: 'Create a new geo target for geographic targeting. Areas is an array of objects with country, region, city, sub_region fields.',
+      description: 'Create a new geo target for geographic targeting. Areas is an array of objects with continent, country (2-letter code), region, city fields.',
       schema: {
         name: z.string().describe('Geo target name'),
         inclusive: z.boolean().optional().describe('If true, target users IN these areas; if false, EXCLUDE these areas'),
         areas: z.array(z.object({
-          country: z.string().describe('Country name or code (e.g., "US", "Canada")'),
+          continent: z.string().optional().describe('Continent name (e.g. "North America", "Europe"). Not needed if country is provided.'),
+          country: z.string().optional().describe('Two-letter country code (e.g., "US", "CA")'),
           region: z.string().optional().describe('Region/state (e.g., "California")'),
           city: z.string().optional().describe('City name (e.g., "San Francisco")'),
-          sub_region: z.string().optional().describe('Sub-region'),
         })).describe('Array of geographic areas to target'),
-        range: z.number().optional().describe('Radius range for geo-fencing'),
+        range: z.number().optional().describe('Radius range for geo-fencing (only applies when targeting a city)'),
         unit: z.enum(['miles', 'kilometers']).optional().describe('Distance unit for range'),
       },
       handler: async (args) => {
@@ -231,10 +234,10 @@ export function targetingTools(client: AdButlerClient): ToolDef[] {
         name: z.string().optional().describe('Geo target name'),
         inclusive: z.boolean().optional().describe('If true, target users IN these areas; if false, EXCLUDE'),
         areas: z.array(z.object({
-          country: z.string().describe('Country name or code'),
+          continent: z.string().optional().describe('Continent name'),
+          country: z.string().optional().describe('Two-letter country code'),
           region: z.string().optional().describe('Region/state'),
           city: z.string().optional().describe('City name'),
-          sub_region: z.string().optional().describe('Sub-region'),
         })).optional().describe('Array of geographic areas'),
         range: z.number().optional().describe('Radius range'),
         unit: z.enum(['miles', 'kilometers']).optional().describe('Distance unit'),
@@ -282,8 +285,12 @@ export function targetingTools(client: AdButlerClient): ToolDef[] {
       name: 'create_postal_code_target',
       description: 'Create a new postal code target',
       schema: {
-        name: z.string().describe('Postal code target name'),
-        postal_codes: z.array(z.string()).optional().describe('Array of postal/zip codes to target'),
+        label: z.string().describe('Postal code target name'),
+        inclusive: z.boolean().optional().describe('If true, inclusion target; if false, exclusion target'),
+        locations: z.array(z.object({
+          country: z.string().describe('Two-letter country code (e.g. "JP", "US")'),
+          postal_codes: z.array(z.string()).describe('Array of postal codes for this country'),
+        })).describe('Array of locations grouped by country'),
       },
       handler: async (args) => {
         const data = await client.post('/postal-code-targets', args as Record<string, unknown>);
@@ -295,8 +302,12 @@ export function targetingTools(client: AdButlerClient): ToolDef[] {
       description: 'Update an existing postal code target',
       schema: {
         id: z.number().describe('Postal code target ID'),
-        name: z.string().optional().describe('Postal code target name'),
-        postal_codes: z.array(z.string()).optional().describe('Array of postal/zip codes'),
+        label: z.string().optional().describe('Postal code target name'),
+        inclusive: z.boolean().optional().describe('If true, inclusion target; if false, exclusion target'),
+        locations: z.array(z.object({
+          country: z.string().describe('Two-letter country code'),
+          postal_codes: z.array(z.string()).describe('Array of postal codes'),
+        })).optional().describe('Array of locations grouped by country'),
       },
       handler: async (args) => {
         const { id, ...body } = args;
@@ -339,11 +350,11 @@ export function targetingTools(client: AdButlerClient): ToolDef[] {
     },
     {
       name: 'create_list_target',
-      description: 'Create a new list target (allowlist/blocklist)',
+      description: 'Create a new list target (inclusion/exclusion using a data list)',
       schema: {
-        name: z.string().describe('List target name'),
-        type: z.enum(['allowlist', 'blocklist']).optional().describe('List type: allowlist or blocklist'),
-        values: z.array(z.string()).optional().describe('Array of values (domains, URLs, etc.)'),
+        label: z.string().describe('List target name'),
+        inclusive: z.boolean().optional().describe('If true, inclusion target; if false, exclusion target'),
+        data_list: z.number().optional().describe('Data list ID containing the values to target'),
       },
       handler: async (args) => {
         const data = await client.post('/list-targets', args as Record<string, unknown>);
@@ -355,9 +366,9 @@ export function targetingTools(client: AdButlerClient): ToolDef[] {
       description: 'Update an existing list target',
       schema: {
         id: z.number().describe('List target ID'),
-        name: z.string().optional().describe('List target name'),
-        type: z.enum(['allowlist', 'blocklist']).optional().describe('List type'),
-        values: z.array(z.string()).optional().describe('Array of values'),
+        label: z.string().optional().describe('List target name'),
+        inclusive: z.boolean().optional().describe('If true, inclusion; if false, exclusion'),
+        data_list: z.number().optional().describe('Data list ID'),
       },
       handler: async (args) => {
         const { id, ...body } = args;
@@ -403,6 +414,8 @@ export function targetingTools(client: AdButlerClient): ToolDef[] {
       description: 'Create a new platform target for device/OS/browser targeting',
       schema: {
         name: z.string().describe('Platform target name'),
+        platform: z.enum(['any', 'specific', 'mobile', 'tablet', 'mobile_and_tablet', 'desktop']).optional().describe('Preset platform target (default: any)'),
+        device_targets: z.array(z.string()).optional().describe('List of device patterns to target (e.g. "Apple*", "Samsung Galaxy S5")'),
       },
       handler: async (args) => {
         const data = await client.post('/platform-targets', args as Record<string, unknown>);
@@ -415,6 +428,8 @@ export function targetingTools(client: AdButlerClient): ToolDef[] {
       schema: {
         id: z.number().describe('Platform target ID'),
         name: z.string().optional().describe('Platform target name'),
+        platform: z.enum(['any', 'specific', 'mobile', 'tablet', 'mobile_and_tablet', 'desktop']).optional().describe('Preset platform target'),
+        device_targets: z.array(z.string()).optional().describe('List of device patterns to target'),
       },
       handler: async (args) => {
         const { id, ...body } = args;
