@@ -28,6 +28,7 @@ import {
   draftTools,
 } from './tools/index.js';
 import type { ToolDef } from './types.js';
+import { registerPrompts } from './prompts.js';
 
 function registerTools(server: McpServer, tools: ToolDef[]): void {
   for (const tool of tools) {
@@ -91,6 +92,9 @@ export function createServer(client: AdButlerClient): McpServer {
     };
     registerTools(server, setupTools(client, onAuthenticated));
   }
+
+  // Register skill prompts (available regardless of auth state)
+  registerPrompts(server);
 
   return server;
 }
