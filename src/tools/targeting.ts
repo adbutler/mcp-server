@@ -139,7 +139,7 @@ export function targetingTools(client: AdButlerClient): ToolDef[] {
         id: z.number().describe('Day parting ID'),
       },
       handler: async (args) => {
-        const data = await client.get(`/day-partings/${args.id}`);
+        const data = await client.get(`/day-parting/${args.id}`);
         return JSON.stringify(data, null, 2);
       },
     },
@@ -169,7 +169,7 @@ export function targetingTools(client: AdButlerClient): ToolDef[] {
       },
       handler: async (args) => {
         const { id, ...body } = args;
-        const data = await client.put(`/day-partings/${id}`, body as Record<string, unknown>);
+        const data = await client.put(`/day-parting/${id}`, body as Record<string, unknown>);
         return JSON.stringify(data, null, 2);
       },
     },
@@ -180,7 +180,7 @@ export function targetingTools(client: AdButlerClient): ToolDef[] {
         id: z.number().describe('Day parting ID'),
       },
       handler: async (args) => {
-        const data = await client.delete(`/day-partings/${args.id}`);
+        const data = await client.delete(`/day-parting/${args.id}`);
         return JSON.stringify(data, null, 2);
       },
     },
@@ -445,6 +445,30 @@ export function targetingTools(client: AdButlerClient): ToolDef[] {
       },
       handler: async (args) => {
         const data = await client.delete(`/platform-targets/${args.id}`);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+
+    // --- Data Targets ---
+    {
+      name: 'list_data_targets',
+      description: 'List all data targets',
+      schema: { ...PaginationParams },
+      handler: async (args) => {
+        const data = await client.get('/data-targets', args);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+
+    // --- List Target Extras ---
+    {
+      name: 'remove_list_target_usages',
+      description: 'Remove all usages of a list target',
+      schema: {
+        id: z.number().describe('List target ID'),
+      },
+      handler: async (args) => {
+        const data = await client.post(`/list-targets/${args.id}/remove-usages`, {});
         return JSON.stringify(data, null, 2);
       },
     },

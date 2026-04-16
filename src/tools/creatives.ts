@@ -255,5 +255,51 @@ export function creativeTools(client: AdButlerClient): ToolDef[] {
         return JSON.stringify(data, null, 2);
       },
     },
+
+    // --- Replace Creative Files ---
+    {
+      name: 'replace_image_creative_file',
+      description: 'Replace the file on an image creative',
+      schema: {
+        id: z.number().describe('Creative ID'),
+      },
+      handler: async (args) => {
+        const data = await client.post(`/creatives/image/${args.id}/replace-file`, {});
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'replace_rich_media_creative_file',
+      description: 'Replace the file on a rich media creative',
+      schema: {
+        id: z.number().describe('Creative ID'),
+      },
+      handler: async (args) => {
+        const data = await client.post(`/creatives/rich-media/${args.id}/replace-file`, {});
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'replace_video_creative_file',
+      description: 'Replace the file on a video creative',
+      schema: {
+        id: z.number().describe('Creative ID'),
+      },
+      handler: async (args) => {
+        const data = await client.post(`/creatives/video/${args.id}/replace-file`, {});
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'replace_audio_creative_file',
+      description: 'Replace the file on an audio creative',
+      schema: {
+        id: z.number().describe('Creative ID'),
+      },
+      handler: async (args) => {
+        const data = await client.post(`/creatives/audio/${args.id}/replace-file`, {});
+        return JSON.stringify(data, null, 2);
+      },
+    },
   ];
 }

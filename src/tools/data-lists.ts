@@ -59,5 +59,46 @@ export function dataListTools(client: AdButlerClient): ToolDef[] {
         return JSON.stringify(data, null, 2);
       },
     },
+
+    // --- Bulk Upload ---
+    {
+      name: 'bulk_upload_add_data_list',
+      description: 'Bulk add entries to a data list',
+      schema: {
+        id: z.number().describe('Data list ID'),
+        data: z.string().optional().describe('CSV data to add'),
+      },
+      handler: async (args) => {
+        const { id, ...body } = args;
+        const data = await client.post(`/data-lists/${id}/bulk-upload-add`, body as Record<string, unknown>);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'bulk_upload_remove_data_list',
+      description: 'Bulk remove entries from a data list',
+      schema: {
+        id: z.number().describe('Data list ID'),
+        data: z.string().optional().describe('CSV data to remove'),
+      },
+      handler: async (args) => {
+        const { id, ...body } = args;
+        const data = await client.post(`/data-lists/${id}/bulk-upload-remove`, body as Record<string, unknown>);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'bulk_upload_replace_data_list',
+      description: 'Bulk replace all entries in a data list',
+      schema: {
+        id: z.number().describe('Data list ID'),
+        data: z.string().optional().describe('CSV data to replace list with'),
+      },
+      handler: async (args) => {
+        const { id, ...body } = args;
+        const data = await client.post(`/data-lists/${id}/bulk-upload-replace`, body as Record<string, unknown>);
+        return JSON.stringify(data, null, 2);
+      },
+    },
   ];
 }

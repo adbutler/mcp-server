@@ -127,5 +127,16 @@ export function placementTools(client: AdButlerClient): ToolDef[] {
         return JSON.stringify(data, null, 2);
       },
     },
+    {
+      name: 'get_placement_conversion_tag',
+      description: 'Get conversion tracking tag for a placement',
+      schema: {
+        id: z.number().describe('Placement ID'),
+      },
+      handler: async (args) => {
+        const data = await client.get(`/placements/${args.id}/conversion-tag`);
+        return JSON.stringify(data, null, 2);
+      },
+    },
   ];
 }

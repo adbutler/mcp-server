@@ -167,7 +167,7 @@ export function zoneTools(client: AdButlerClient): ToolDef[] {
         zone_ids: z.array(z.number()).describe('Array of zone IDs to generate tags for'),
       },
       handler: async (args) => {
-        const data = await client.post('/zones/standard/bulk-tags', { zones: args.zone_ids } as Record<string, unknown>);
+        const data = await client.post('/zones/standard/tags/bulk', { zones: args.zone_ids } as Record<string, unknown>);
         return JSON.stringify(data, null, 2);
       },
     },

@@ -178,5 +178,74 @@ export function userDbTools(client: AdButlerClient): ToolDef[] {
         return JSON.stringify(data, null, 2);
       },
     },
+
+    // --- Users ---
+    {
+      name: 'get_user',
+      description: 'Get a single user from a user database',
+      schema: {
+        user_db_id: z.number().describe('User database ID'),
+        user_id: z.string().describe('User ID'),
+      },
+      handler: async (args) => {
+        const data = await client.get(`/user-dbs/${args.user_db_id}/users/${args.user_id}`);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'create_user',
+      description: 'Create a new user in a user database',
+      schema: {
+        user_db_id: z.number().describe('User database ID'),
+        user_id: z.string().optional().describe('User ID'),
+        attributes: z.record(z.unknown()).optional().describe('User attribute values'),
+      },
+      handler: async (args) => {
+        const { user_db_id, ...body } = args;
+        const data = await client.post(`/user-dbs/${user_db_id}/users`, body as Record<string, unknown>);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'bulk_upload_replace_user_db',
+      description: 'Bulk upload to replace all user data in a user database',
+      schema: {
+        id: z.number().describe('User database ID'),
+      },
+      handler: async (args) => {
+        const data = await client.post(`/user-dbs/${args.id}/bulk-upload-replace`, {});
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'add_user_list_attribute_values',
+      description: 'Add values to a list attribute for a user',
+      schema: {
+        user_db_id: z.number().describe('User database ID'),
+        user_id: z.string().describe('User ID'),
+        list_attribute_name: z.string().describe('List attribute name'),
+        values: z.array(z.string()).optional().describe('Values to add'),
+      },
+      handler: async (args) => {
+        const { user_db_id, user_id, list_attribute_name, ...body } = args;
+        const data = await client.post(`/user-dbs/${user_db_id}/users/${user_id}/${list_attribute_name}/add`, body as Record<string, unknown>);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'remove_user_list_attribute_values',
+      description: 'Remove values from a list attribute for a user',
+      schema: {
+        user_db_id: z.number().describe('User database ID'),
+        user_id: z.string().describe('User ID'),
+        list_attribute_name: z.string().describe('List attribute name'),
+        values: z.array(z.string()).optional().describe('Values to remove'),
+      },
+      handler: async (args) => {
+        const { user_db_id, user_id, list_attribute_name, ...body } = args;
+        const data = await client.post(`/user-dbs/${user_db_id}/users/${user_id}/${list_attribute_name}/remove`, body as Record<string, unknown>);
+        return JSON.stringify(data, null, 2);
+      },
+    },
   ];
 }
