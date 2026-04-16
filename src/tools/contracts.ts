@@ -350,5 +350,212 @@ export function contractTools(client: AdButlerClient): ToolDef[] {
         return JSON.stringify(data, null, 2);
       },
     },
+
+    // --- Contract Archive/Unarchive ---
+    {
+      name: 'archive_contract',
+      description: 'Archive a contract (soft-delete, can be restored later)',
+      schema: {
+        id: z.number().describe('Contract ID'),
+      },
+      handler: async (args) => {
+        const data = await client.post(`/contracts/${args.id}/archive`, {});
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'unarchive_contract',
+      description: 'Unarchive a contract (restore from archive)',
+      schema: {
+        id: z.number().describe('Archived contract ID'),
+      },
+      handler: async (args) => {
+        const data = await client.post(`/contracts/archived/${args.id}/unarchive`, {});
+        return JSON.stringify(data, null, 2);
+      },
+    },
+
+    // --- Contract Extras ---
+    {
+      name: 'get_contract_assigned_campaigns',
+      description: 'Get campaigns assigned to a contract',
+      schema: {
+        id: z.number().describe('Contract ID'),
+      },
+      handler: async (args) => {
+        const data = await client.get(`/contracts/${args.id}/assigned-campaigns`);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'get_contract_active_signature_request',
+      description: 'Get the active signature request for a contract',
+      schema: {
+        id: z.number().describe('Contract ID'),
+      },
+      handler: async (args) => {
+        const data = await client.get(`/contracts/${args.id}/signature-request`);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'create_contract_document_from_template',
+      description: 'Create a contract document from a template',
+      schema: {
+        contract_id: z.number().describe('Contract ID'),
+        template_id: z.number().optional().describe('Template ID'),
+      },
+      handler: async (args) => {
+        const { contract_id, ...body } = args;
+        const data = await client.post(`/contracts/${contract_id}/document-from-template`, body as Record<string, unknown>);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'replace_contract_document_file',
+      description: 'Replace the file on a contract document',
+      schema: {
+        contract_id: z.number().describe('Contract ID'),
+        document_id: z.number().describe('Document ID'),
+      },
+      handler: async (args) => {
+        const data = await client.post(`/contracts/${args.contract_id}/documents/${args.document_id}/replace-file`, {});
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'replace_contract_document_file_from_template',
+      description: 'Replace a contract document file from a template',
+      schema: {
+        contract_id: z.number().describe('Contract ID'),
+        document_id: z.number().describe('Document ID'),
+      },
+      handler: async (args) => {
+        const data = await client.post(`/contracts/${args.contract_id}/documents/${args.document_id}/replace-file-from-template`, {});
+        return JSON.stringify(data, null, 2);
+      },
+    },
+
+    // --- Contract Document File Revisions ---
+    {
+      name: 'list_contract_document_file_revisions',
+      description: 'List file revisions for a contract document',
+      schema: {
+        contract_id: z.number().describe('Contract ID'),
+        document_id: z.number().describe('Document ID'),
+      },
+      handler: async (args) => {
+        const data = await client.get(`/contracts/${args.contract_id}/documents/${args.document_id}/file-revisions`);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'get_contract_document_file_revision',
+      description: 'Get a specific file revision for a contract document',
+      schema: {
+        contract_id: z.number().describe('Contract ID'),
+        document_id: z.number().describe('Document ID'),
+        revision_id: z.number().describe('File revision ID'),
+      },
+      handler: async (args) => {
+        const data = await client.get(`/contracts/${args.contract_id}/documents/${args.document_id}/file-revisions/${args.revision_id}`);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'download_contract_document_file_revision',
+      description: 'Download a file revision for a contract document',
+      schema: {
+        contract_id: z.number().describe('Contract ID'),
+        document_id: z.number().describe('Document ID'),
+        revision_id: z.number().describe('File revision ID'),
+      },
+      handler: async (args) => {
+        const data = await client.get(`/contracts/${args.contract_id}/documents/${args.document_id}/file-revisions/${args.revision_id}/download`);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+
+    // --- Signature Request Recipients ---
+    {
+      name: 'list_signature_request_recipients',
+      description: 'List all recipients for a signature request',
+      schema: {
+        contract_id: z.number().describe('Contract ID'),
+        request_id: z.number().describe('Signature request ID'),
+      },
+      handler: async (args) => {
+        const data = await client.get(`/contracts/${args.contract_id}/signature-requests/${args.request_id}/recipients`);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'get_signature_request_recipient',
+      description: 'Get a specific recipient for a signature request',
+      schema: {
+        contract_id: z.number().describe('Contract ID'),
+        request_id: z.number().describe('Signature request ID'),
+        recipient_id: z.number().describe('Recipient ID'),
+      },
+      handler: async (args) => {
+        const data = await client.get(`/contracts/${args.contract_id}/signature-requests/${args.request_id}/recipients/${args.recipient_id}`);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'update_signature_request_recipient',
+      description: 'Update a recipient for a signature request',
+      schema: {
+        contract_id: z.number().describe('Contract ID'),
+        request_id: z.number().describe('Signature request ID'),
+        recipient_id: z.number().describe('Recipient ID'),
+        name: z.string().optional().describe('Recipient name'),
+        email: z.string().optional().describe('Recipient email'),
+      },
+      handler: async (args) => {
+        const { contract_id, request_id, recipient_id, ...body } = args;
+        const data = await client.put(`/contracts/${contract_id}/signature-requests/${request_id}/recipients/${recipient_id}`, body as Record<string, unknown>);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'delete_signature_request_recipient',
+      description: 'Delete a recipient from a signature request',
+      schema: {
+        contract_id: z.number().describe('Contract ID'),
+        request_id: z.number().describe('Signature request ID'),
+        recipient_id: z.number().describe('Recipient ID'),
+      },
+      handler: async (args) => {
+        const data = await client.delete(`/contracts/${args.contract_id}/signature-requests/${args.request_id}/recipients/${args.recipient_id}`);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+
+    // --- Signature Request Actions ---
+    {
+      name: 'cancel_signature_request',
+      description: 'Cancel a signature request',
+      schema: {
+        contract_id: z.number().describe('Contract ID'),
+        request_id: z.number().describe('Signature request ID'),
+      },
+      handler: async (args) => {
+        const data = await client.post(`/contracts/${args.contract_id}/signature-requests/${args.request_id}/cancel`, {});
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'resend_signature_request',
+      description: 'Resend a signature request',
+      schema: {
+        contract_id: z.number().describe('Contract ID'),
+        request_id: z.number().describe('Signature request ID'),
+      },
+      handler: async (args) => {
+        const data = await client.post(`/contracts/${args.contract_id}/signature-requests/${args.request_id}/resend`, {});
+        return JSON.stringify(data, null, 2);
+      },
+    },
   ];
 }

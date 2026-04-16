@@ -72,6 +72,18 @@ export function draftTools(client: AdButlerClient): ToolDef[] {
       },
     },
 
+    {
+      name: 'draft_get_ad_item',
+      description: 'Get a draft ad item of any type by ID',
+      schema: {
+        id: z.number().describe('Draft ad item ID'),
+      },
+      handler: async (args) => {
+        const data = await client.get(`/drafts/ad-items/${args.id}`);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+
     // --- Draft Image Ad Items ---
     {
       name: 'draft_list_image_ad_items',
@@ -533,6 +545,19 @@ export function draftTools(client: AdButlerClient): ToolDef[] {
       },
       handler: async (args) => {
         const data = await client.delete(`/drafts/schedules/${args.id}`);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+
+    // --- Draft Campaign Save/Publish ---
+    {
+      name: 'draft_save_campaign',
+      description: 'Save/publish a draft campaign (converts draft to live campaign)',
+      schema: {
+        id: z.number().describe('Draft campaign ID'),
+      },
+      handler: async (args) => {
+        const data = await client.post(`/drafts/campaigns/standard/${args.id}/save`, {});
         return JSON.stringify(data, null, 2);
       },
     },

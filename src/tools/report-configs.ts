@@ -121,5 +121,157 @@ export function reportConfigTools(client: AdButlerClient): ToolDef[] {
         return JSON.stringify(data, null, 2);
       },
     },
+
+    // --- Generated Reports ---
+    {
+      name: 'list_all_generated_reports',
+      description: 'List all generated reports across all configurations',
+      schema: { ...PaginationParams },
+      handler: async (args) => {
+        const data = await client.get('/reports/report-configurations/generated', args);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'list_all_report_schedules',
+      description: 'List all report schedules across all configurations',
+      schema: { ...PaginationParams },
+      handler: async (args) => {
+        const data = await client.get('/reports/report-configurations/schedules', args);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'list_report_generated',
+      description: 'List generated reports for a specific report configuration',
+      schema: {
+        report_config_id: z.number().describe('Report configuration ID'),
+        ...PaginationParams,
+      },
+      handler: async (args) => {
+        const { report_config_id, ...params } = args;
+        const data = await client.get(`/reports/report-configurations/${report_config_id}/generated`, params);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'get_report_generated',
+      description: 'Get a specific generated report',
+      schema: {
+        report_config_id: z.number().describe('Report configuration ID'),
+        generated_id: z.number().describe('Generated report ID'),
+      },
+      handler: async (args) => {
+        const data = await client.get(`/reports/report-configurations/${args.report_config_id}/generated/${args.generated_id}`);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+
+    // --- Report Schedules ---
+    {
+      name: 'list_report_schedules',
+      description: 'List schedules for a specific report configuration',
+      schema: {
+        report_config_id: z.number().describe('Report configuration ID'),
+        ...PaginationParams,
+      },
+      handler: async (args) => {
+        const { report_config_id, ...params } = args;
+        const data = await client.get(`/reports/report-configurations/${report_config_id}/schedules`, params);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'get_report_schedule',
+      description: 'Get a specific report schedule',
+      schema: {
+        report_config_id: z.number().describe('Report configuration ID'),
+        schedule_id: z.number().describe('Schedule ID'),
+      },
+      handler: async (args) => {
+        const data = await client.get(`/reports/report-configurations/${args.report_config_id}/schedules/${args.schedule_id}`);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'create_report_schedule',
+      description: 'Create a new report schedule',
+      schema: {
+        report_config_id: z.number().describe('Report configuration ID'),
+        frequency: z.string().optional().describe('Schedule frequency'),
+        recipients: z.array(z.unknown()).optional().describe('Array of recipient objects'),
+      },
+      handler: async (args) => {
+        const { report_config_id, ...body } = args;
+        const data = await client.post(`/reports/report-configurations/${report_config_id}/schedules`, body as Record<string, unknown>);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'update_report_schedule',
+      description: 'Update a report schedule',
+      schema: {
+        report_config_id: z.number().describe('Report configuration ID'),
+        schedule_id: z.number().describe('Schedule ID'),
+        frequency: z.string().optional().describe('Schedule frequency'),
+        recipients: z.array(z.unknown()).optional().describe('Array of recipient objects'),
+      },
+      handler: async (args) => {
+        const { report_config_id, schedule_id, ...body } = args;
+        const data = await client.put(`/reports/report-configurations/${report_config_id}/schedules/${schedule_id}`, body as Record<string, unknown>);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'delete_report_schedule',
+      description: 'Delete a report schedule',
+      schema: {
+        report_config_id: z.number().describe('Report configuration ID'),
+        schedule_id: z.number().describe('Schedule ID'),
+      },
+      handler: async (args) => {
+        const data = await client.delete(`/reports/report-configurations/${args.report_config_id}/schedules/${args.schedule_id}`);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'list_report_schedule_generated',
+      description: 'List generated reports for a specific schedule',
+      schema: {
+        report_config_id: z.number().describe('Report configuration ID'),
+        schedule_id: z.number().describe('Schedule ID'),
+        ...PaginationParams,
+      },
+      handler: async (args) => {
+        const { report_config_id, schedule_id, ...params } = args;
+        const data = await client.get(`/reports/report-configurations/${report_config_id}/schedules/${schedule_id}/generated`, params);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'get_report_schedule_generated',
+      description: 'Get a specific generated report from a schedule',
+      schema: {
+        report_config_id: z.number().describe('Report configuration ID'),
+        schedule_id: z.number().describe('Schedule ID'),
+        generated_id: z.number().describe('Generated report ID'),
+      },
+      handler: async (args) => {
+        const data = await client.get(`/reports/report-configurations/${args.report_config_id}/schedules/${args.schedule_id}/generated/${args.generated_id}`);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'revoke_report_schedule_historical_access',
+      description: 'Revoke historical access for a report schedule',
+      schema: {
+        report_config_id: z.number().describe('Report configuration ID'),
+        schedule_id: z.number().describe('Schedule ID'),
+      },
+      handler: async (args) => {
+        const data = await client.post(`/reports/report-configurations/${args.report_config_id}/schedules/${args.schedule_id}/revoke-historical-access`, {});
+        return JSON.stringify(data, null, 2);
+      },
+    },
   ];
 }

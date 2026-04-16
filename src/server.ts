@@ -26,6 +26,13 @@ import {
   dataListTools,
   securityTools,
   draftTools,
+  productDbTools,
+  bidderTools,
+  sftpConnectionTools,
+  eventLogUploadTools,
+  vast42Tools,
+  ortbNativeAssetTools,
+  zoneOrtbNativeAdTools,
 } from './tools/index.js';
 import type { ToolDef } from './types.js';
 import { registerPrompts } from './prompts.js';
@@ -75,6 +82,13 @@ function getApiTools(client: AdButlerClient): ToolDef[] {
     ...dataListTools(client),
     ...securityTools(client),
     ...draftTools(client),
+    ...productDbTools(client),
+    ...bidderTools(client),
+    ...sftpConnectionTools(client),
+    ...eventLogUploadTools(client),
+    ...vast42Tools(client),
+    ...ortbNativeAssetTools(client),
+    ...zoneOrtbNativeAdTools(client),
   ];
 }
 

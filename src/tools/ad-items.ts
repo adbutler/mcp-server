@@ -436,5 +436,18 @@ export function adItemTools(client: AdButlerClient): ToolDef[] {
         return JSON.stringify(data, null, 2);
       },
     },
+
+    // --- Ad Item Conversions ---
+    {
+      name: 'convert_native_to_image',
+      description: 'Convert a native ad item to an image ad item',
+      schema: {
+        id: z.number().describe('Native ad item ID'),
+      },
+      handler: async (args) => {
+        const data = await client.post(`/ad-items/native/${args.id}/to-image`, {});
+        return JSON.stringify(data, null, 2);
+      },
+    },
   ];
 }

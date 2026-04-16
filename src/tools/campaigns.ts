@@ -152,5 +152,55 @@ export function campaignTools(client: AdButlerClient): ToolDef[] {
         return JSON.stringify(data, null, 2);
       },
     },
+
+    // --- Campaign Extras ---
+    {
+      name: 'get_campaign_conversion_tag',
+      description: 'Get conversion tag for a campaign',
+      schema: {
+        id: z.number().describe('Campaign ID'),
+      },
+      handler: async (args) => {
+        const data = await client.get(`/campaigns/standard/${args.id}/conversion-tag`);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'get_campaign_eligible_zones',
+      description: 'Get eligible zones for a campaign',
+      schema: {
+        id: z.number().describe('Campaign ID'),
+      },
+      handler: async (args) => {
+        const data = await client.get(`/campaigns/${args.id}/eligible-zones`);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'campaign_bulk_create_catalog_ad_items',
+      description: 'Bulk create catalog ad items in a campaign',
+      schema: {
+        campaign_id: z.number().describe('Campaign ID'),
+        items: z.array(z.record(z.unknown())).describe('Array of catalog ad item objects to create'),
+      },
+      handler: async (args) => {
+        const { campaign_id, ...body } = args;
+        const data = await client.post(`/campaigns/standard/${campaign_id}/catalog-ad-item-bulk-create`, body as Record<string, unknown>);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'campaign_bulk_delete_catalog_ad_items',
+      description: 'Bulk delete catalog ad items from a campaign',
+      schema: {
+        campaign_id: z.number().describe('Campaign ID'),
+        items: z.array(z.number()).describe('Array of catalog ad item IDs to delete'),
+      },
+      handler: async (args) => {
+        const { campaign_id, ...body } = args;
+        const data = await client.delete(`/campaigns/standard/${campaign_id}/catalog-ad-item-bulk-delete`);
+        return JSON.stringify(data, null, 2);
+      },
+    },
   ];
 }

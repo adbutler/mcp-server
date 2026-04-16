@@ -116,5 +116,16 @@ export function securityTools(client: AdButlerClient): ToolDef[] {
         return JSON.stringify(data, null, 2);
       },
     },
+    {
+      name: 'validate_beacon_signing_key',
+      description: 'Validate a beacon signing key',
+      schema: {
+        key: z.string().optional().describe('Beacon signing key to validate'),
+      },
+      handler: async (args) => {
+        const data = await client.post('/beacon-signing-keys/validate', args as Record<string, unknown>);
+        return JSON.stringify(data, null, 2);
+      },
+    },
   ];
 }

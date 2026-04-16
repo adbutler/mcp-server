@@ -999,5 +999,64 @@ export function vastTools(client: AdButlerClient): ToolDef[] {
         return JSON.stringify(data, null, 2);
       },
     },
+
+    // ========================================================================
+    // VAST Zone Tags & Conversion Tags
+    // ========================================================================
+    {
+      name: 'get_vast_zone_tags',
+      description: 'Get VAST zone serving tags',
+      schema: {
+        id: z.number().describe('VAST zone ID'),
+      },
+      handler: async (args) => {
+        const data = await client.get(`/vast-zones/${args.id}/tags`);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'get_vast_zone_conversion_tag',
+      description: 'Get VAST zone conversion tracking tag',
+      schema: {
+        id: z.number().describe('VAST zone ID'),
+      },
+      handler: async (args) => {
+        const data = await client.get(`/vast-zones/${args.id}/conversion-tag`);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'get_vast_ad_item_conversion_tag',
+      description: 'Get conversion tracking tag for a VAST ad item',
+      schema: {
+        id: z.number().describe('VAST ad item ID'),
+      },
+      handler: async (args) => {
+        const data = await client.get(`/vast-ad-items/${args.id}/conversion-tag`);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'get_vast_campaign_conversion_tag',
+      description: 'Get conversion tracking tag for a VAST campaign',
+      schema: {
+        id: z.number().describe('VAST campaign ID'),
+      },
+      handler: async (args) => {
+        const data = await client.get(`/vast-campaigns/${args.id}/conversion-tag`);
+        return JSON.stringify(data, null, 2);
+      },
+    },
+    {
+      name: 'get_vast_placement_conversion_tag',
+      description: 'Get conversion tracking tag for a VAST placement',
+      schema: {
+        id: z.number().describe('VAST placement ID'),
+      },
+      handler: async (args) => {
+        const data = await client.get(`/vast-placements/${args.id}/conversion-tag`);
+        return JSON.stringify(data, null, 2);
+      },
+    },
   ];
 }

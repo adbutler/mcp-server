@@ -260,5 +260,16 @@ export function accountTools(client: AdButlerClient): ToolDef[] {
         return JSON.stringify(data, null, 2);
       },
     },
+    {
+      name: 'get_contact_report_schedules',
+      description: 'List report schedules for a contact',
+      schema: {
+        id: z.number().describe('Contact ID'),
+      },
+      handler: async (args) => {
+        const data = await client.get(`/contacts/${args.id}/report-configuration-schedules`);
+        return JSON.stringify(data, null, 2);
+      },
+    },
   ];
 }
