@@ -1,0 +1,36 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "com.adbutler/mcp-server",
+  "title": "AdButler",
+  "description": "Manage AdButler campaigns, zones, ad items, VAST, and reports from Claude, ChatGPT, and Cursor.",
+  "repository": {
+    "url": "https://github.com/adbutler/mcp-server",
+    "source": "github"
+  },
+  "version": "2.3.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "@adbutler/mcp-server",
+      "version": "2.3.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "ADBUTLER_API_KEY",
+          "description": "Your AdButler API key. Get it from AdButler Dashboard → Settings → API Keys.",
+          "isRequired": true,
+          "format": "string",
+          "isSecret": true
+        }
+      ]
+    }
+  ],
+  "remotes": [
+    {
+      "type": "sse",
+      "url": "https://mcp.adbutler.com/sse"
+    }
+  ]
+}
