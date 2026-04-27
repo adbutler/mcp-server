@@ -22,10 +22,22 @@ async function storeApiKey(apiKey: string): Promise<void> {
   await writeFile(CREDENTIALS_FILE, JSON.stringify({ apiKey }, null, 2), { mode: 0o600 });
 }
 
+/**
+ * Setup tools shown when no API key is configured. Hosted (SSE) deployments
+ * MUST pass `persist: false` — writing to ~/.adbutler/credentials.json on a
+ * shared container would leak one user's key to subsequent connections.
+ *
+ * Local stdio passes `persist: true` so a user only has to setup once.
+ */
 export function setupTools(
   client: AdButlerClient,
   onAuthenticated: () => void,
+  persist: boolean,
 ): ToolDef[] {
+  const reconnectHint = persist
+    ? ''
+    : ' If your client does not show the new tools immediately, disconnect and reconnect to refresh the tool list.';
+
   return [
     {
       name: 'setup_api_key',
@@ -49,13 +61,16 @@ export function setupTools(
           );
         }
 
-        await storeApiKey(apiKey);
+        if (persist) {
+          await storeApiKey(apiKey);
+        }
         onAuthenticated();
 
         return JSON.stringify({
           success: true,
           message:
-            'API key validated and saved. All AdButler tools are now available — you can start managing advertisers, campaigns, zones, and more.',
+            'API key validated. All AdButler tools are now available — you can start managing advertisers, campaigns, zones, and more.' +
+            reconnectHint,
         }, null, 2);
       },
     },
@@ -122,13 +137,16 @@ export function setupTools(
         }
 
         client.setApiKey(apiKey);
-        await storeApiKey(apiKey);
+        if (persist) {
+          await storeApiKey(apiKey);
+        }
         onAuthenticated();
 
         return JSON.stringify({
           success: true,
           message:
-            'Email verified and API key configured. All AdButler tools are now available — you can start managing advertisers, campaigns, zones, and more.',
+            'Email verified and API key configured. All AdButler tools are now available — you can start managing advertisers, campaigns, zones, and more.' +
+            reconnectHint,
           account_id: result.account_id,
         }, null, 2);
       },

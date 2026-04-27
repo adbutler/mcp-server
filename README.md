@@ -83,6 +83,40 @@ Add to the client's MCP config:
 
 AdButler Dashboard → **Settings → API Keys** → create a new key. It's the same key the AdButler v2 REST API uses.
 
+## Authentication
+
+The AdButler MCP works for both new and existing customers. What you see depends on whether you've already configured an API key.
+
+### Already an AdButler customer? (existing API key)
+
+Use one of these:
+
+**Option 1 — set the API key in your client config (recommended for hosted)**
+
+Add an `Authorization: Bearer YOUR_ADBUTLER_API_KEY` header on the SSE connection. Examples:
+
+- **Claude Desktop** — edit `claude_desktop_config.json` → add `headers: { "Authorization": "Bearer YOUR_API_KEY" }` next to the SSE URL
+- **Cursor** — MCP server settings → Headers → add `Authorization: Bearer YOUR_API_KEY`
+- **Any client** — pass the header on the SSE GET to `https://mcp.adbutler.com/sse`
+
+Reconnect — all 600+ tools become available immediately.
+
+**Option 2 — configure inside the chat (works in any MCP client)**
+
+If your client doesn't support custom headers, just connect to the hosted MCP without auth and you'll see four onboarding tools. Then in the chat say:
+
+> "Configure my AdButler API key: `your_api_key_here`"
+
+Your AI will call the `setup_api_key` tool, validate the key against your account, and unlock all the AdButler tools. You may need to disconnect and reconnect to refresh your client's tool list after.
+
+### New to AdButler? (no account yet)
+
+Connect to the hosted MCP without auth. The chat will guide you through a free trial signup using `create_trial_account` → check your email → `verify_trial_email` with the code. The API key is configured automatically.
+
+### Local stdio install
+
+If you're running locally via `npx`, set `ADBUTLER_API_KEY` in the env block of your client's MCP config (see Option B above). The setup tools also work — and on local the key is remembered between sessions.
+
 ## What's included
 
 ### 9 workflow prompts

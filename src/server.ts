@@ -92,10 +92,19 @@ function getApiTools(client: AdButlerClient): ToolDef[] {
   ];
 }
 
-export function createServer(client: AdButlerClient): McpServer {
+/**
+ * @param persistCredentials  When true (stdio/local), setup_api_key writes the
+ *   key to ~/.adbutler/credentials.json so the user only configures once.
+ *   When false (hosted SSE), the key lives only in the per-session client —
+ *   never on the shared container's filesystem. Default: false (safe).
+ */
+export function createServer(
+  client: AdButlerClient,
+  options: { persistCredentials?: boolean } = {},
+): McpServer {
   const server = new McpServer({
     name: 'adbutler',
-    version: '2.0.0',
+    version: '2.3.1',
   });
 
   if (client.isAuthenticated) {
@@ -104,7 +113,7 @@ export function createServer(client: AdButlerClient): McpServer {
     const onAuthenticated = () => {
       registerTools(server, getApiTools(client));
     };
-    registerTools(server, setupTools(client, onAuthenticated));
+    registerTools(server, setupTools(client, onAuthenticated, options.persistCredentials ?? false));
   }
 
   // Register skill prompts (available regardless of auth state)
