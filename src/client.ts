@@ -38,7 +38,9 @@ export class AdButlerClient {
   private checkAuth(): void {
     if (!this.apiKey) {
       throw new Error(
-        'ADBUTLER_API_KEY environment variable is not set. ' +
+        'No AdButler API key configured. ' +
+        'If you have an existing AdButler account, call the setup_api_key tool with your key. ' +
+        'If you are new to AdButler, call create_trial_account to sign up. ' +
         'Get your API key from AdButler → Settings → API Keys.'
       );
     }

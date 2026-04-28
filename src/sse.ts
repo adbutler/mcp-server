@@ -16,8 +16,10 @@ const httpSessions = new Map<string, { transport: StreamableHTTPServerTransport;
 
 function extractApiKey(req: IncomingMessage, url: URL): string | undefined {
   const authHeader = req.headers.authorization;
-  if (typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
-    return authHeader.slice(7);
+  if (typeof authHeader === 'string' && authHeader.length > 0) {
+    // Accept both "Bearer <key>" (standard) and raw "<key>" (some proxies / Smithery
+    // forward the config value as-is in Authorization without a scheme prefix).
+    return authHeader.startsWith('Bearer ') ? authHeader.slice(7) : authHeader;
   }
   if (url.searchParams.has('api_key')) {
     return url.searchParams.get('api_key')!;

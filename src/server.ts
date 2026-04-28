@@ -97,6 +97,13 @@ function getApiTools(client: AdButlerClient): ToolDef[] {
  *   key to ~/.adbutler/credentials.json so the user only configures once.
  *   When false (hosted SSE), the key lives only in the per-session client —
  *   never on the shared container's filesystem. Default: false (safe).
+ *
+ * Tool registration: ALL tools (API + setup) are registered up-front regardless
+ * of auth state. API tools throw a friendly "configure your API key first"
+ * error if called without auth. This lets discovery aggregators (Smithery,
+ * etc.) see the full toolset on an unauthenticated scan, and avoids the
+ * tool-list-changed refresh-or-reconnect dance for clients that don't react
+ * to mid-session capability changes.
  */
 export function createServer(
   client: AdButlerClient,
@@ -104,19 +111,18 @@ export function createServer(
 ): McpServer {
   const server = new McpServer({
     name: 'adbutler',
-    version: '2.4.0',
+    version: '2.4.2',
   });
 
-  if (client.isAuthenticated) {
-    registerTools(server, getApiTools(client));
-  } else {
-    const onAuthenticated = () => {
-      registerTools(server, getApiTools(client));
-    };
-    registerTools(server, setupTools(client, onAuthenticated, options.persistCredentials ?? false));
-  }
+  // Always show all API tools — they self-gate on auth at call time.
+  registerTools(server, getApiTools(client));
 
-  // Register skill prompts (available regardless of auth state)
+  // Setup tools also always present so users without a key can authenticate
+  // from inside the chat. onAuthenticated is a no-op now since tools are
+  // already registered; setup_api_key just updates the client's in-memory key.
+  registerTools(server, setupTools(client, () => {}, options.persistCredentials ?? false));
+
+  // Skill prompts available regardless of auth state.
   registerPrompts(server);
 
   return server;

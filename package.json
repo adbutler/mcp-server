@@ -1,6 +1,6 @@
 {
   "name": "@adbutler/mcp-server",
-  "version": "2.4.0",
+  "version": "2.4.2",
   "mcpName": "com.adbutler/mcp-server",
   "description": "MCP server for the AdButler ad management API. Manage advertisers, campaigns, zones, creatives, placements, VAST video, programmatic, targeting, drafts, contracts, and reports from Claude, ChatGPT, Cursor, Windsurf, and any other MCP client.",
   "type": "module",
