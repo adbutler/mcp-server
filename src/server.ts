@@ -104,7 +104,7 @@ export function createServer(
 ): McpServer {
   const server = new McpServer({
     name: 'adbutler',
-    version: '2.3.1',
+    version: '2.4.0',
   });
 
   if (client.isAuthenticated) {

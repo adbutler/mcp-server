@@ -29,11 +29,13 @@ You have two options. **Most users want the hosted version** — zero setup, jus
 
 Use AdButler's hosted MCP server. No install, no Node, no npm.
 
+The hosted server speaks both modern **Streamable HTTP** (`/mcp`) and legacy **SSE** (`/sse`) transports. New clients should prefer Streamable HTTP; SSE remains for backward compatibility.
+
 | Client | Configuration |
 |--------|---------------|
-| **Claude Desktop / Code** | Add an MCP server with type `sse`, URL `https://mcp.adbutler.com/sse`, and header `Authorization: Bearer YOUR_ADBUTLER_API_KEY` |
+| **Claude Desktop / Code** | Add an MCP server with URL `https://mcp.adbutler.com/mcp` (or `/sse` for older clients) and header `Authorization: Bearer YOUR_ADBUTLER_API_KEY` |
 | **Cursor** | Settings → Features → Model Context Protocol → Add server with the URL + auth header above |
-| **Any MCP client** | SSE endpoint: `https://mcp.adbutler.com/sse` — pass your API key via `Authorization: Bearer …` or `?api_key=…` query param |
+| **Any MCP client** | Streamable HTTP: `https://mcp.adbutler.com/mcp` &nbsp;·&nbsp; SSE: `https://mcp.adbutler.com/sse` — pass your API key via `Authorization: Bearer …` or `?api_key=…` |
 
 ### Option B — Local stdio (npm)
 
