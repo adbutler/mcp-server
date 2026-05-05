@@ -157,14 +157,15 @@ Pre-built skill prompts that guide the AI through complete workflows end-to-end.
 
 ## Telemetry
 
-The **hosted** server at `mcp.adbutler.com` collects minimal usage analytics so we can understand which tools are popular, prioritize improvements, and catch regressions. We capture, per tool call:
+The **hosted** server at `mcp.adbutler.com` collects usage analytics so we can understand which tools are popular, prioritize improvements, and diagnose failures. We capture, per tool call:
 
 - Tool name (e.g. `list_zones`, `create_campaign`) — never tool arguments
 - Account ID (derived once per session from `/self`)
-- Transport (HTTP or SSE), MCP client name and version (e.g. Claude Desktop), call duration, and success/error status
-- For errors, the upstream HTTP status code only — never the message body
+- API-key fingerprint (SHA-256, truncated to 16 hex chars) — identifies which key was used **without** storing the key itself
+- Transport (HTTP or SSE), MCP client name and version (e.g. Claude Desktop), call duration, success/error status
+- On errors: upstream HTTP status code, a categorical error class (e.g. `forbidden`, `network`), and the error message text (truncated to 1000 characters)
 
-We **never** collect: tool arguments, response bodies, error message text, your API key, IP addresses, request bodies. The instrumentation only sees the tool name and timing.
+We **never** collect: tool arguments, response bodies, your raw API key, IP addresses, request bodies. The instrumentation only sees the tool name, timing, and (on failure) the error message produced by the MCP server or AdButler API.
 
 **Self-installed copies — npm package, stdio, your own deployment — collect zero data.** The instrumentation only fires when the `ANALYTICS_INGEST_URL` environment variable is set, which is only true for the hosted endpoint at mcp.adbutler.com.
 

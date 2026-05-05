@@ -5,18 +5,29 @@ import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { AdButlerClient } from './client.js';
 import { createServer } from './server.js';
-import { createSessionAnalytics, type SessionAnalytics } from './analytics.js';
+import { createSessionAnalytics, type SessionAnalytics, fingerprintApiKey } from './analytics.js';
 
-/** Wire MCP initialize callback → analytics.setClientInfo, plus fire-and-forget /self for account_id. */
+/**
+ * Wire MCP `initialize` callback → analytics.setClientInfo, fire-and-forget
+ * /self for account_id, and subscribe to client.setApiKey changes so the
+ * analytics fingerprint stays current after setup_api_key.
+ */
 function wireSessionIdentity(
   mcpServer: McpServer,
   client: AdButlerClient,
   analytics: SessionAnalytics,
+  initialApiKey: string | undefined,
 ): void {
   mcpServer.server.oninitialized = () => {
     const info = mcpServer.server.getClientVersion();
     if (info) analytics.setClientInfo(info.name, info.version);
   };
+  // Initial fingerprint from the connect-time key (if any).
+  analytics.setApiKeyFingerprint(fingerprintApiKey(initialApiKey));
+  // Update whenever setup_api_key (or anything else) rewrites the key.
+  client.setKeyChangeListener((key) => {
+    analytics.setApiKeyFingerprint(fingerprintApiKey(key));
+  });
   if (client.isAuthenticated) {
     client.get('/self')
       .then((self: unknown) => {
@@ -121,7 +132,7 @@ const httpServer = createHttpServer(async (req, res) => {
     const newSessionId = randomUUID();
     const analytics = createSessionAnalytics({ sessionId: newSessionId, transport: 'http' });
     const mcpServer = createServer(client, { analytics });
-    wireSessionIdentity(mcpServer, client, analytics);
+    wireSessionIdentity(mcpServer, client, analytics, apiKey);
 
     const transport = new StreamableHTTPServerTransport({
       sessionIdGenerator: () => newSessionId,
@@ -148,7 +159,7 @@ const httpServer = createHttpServer(async (req, res) => {
     const transport = new SSEServerTransport('/messages', res);
     const analytics = createSessionAnalytics({ sessionId: transport.sessionId, transport: 'sse' });
     const mcpServer = createServer(client, { analytics });
-    wireSessionIdentity(mcpServer, client, analytics);
+    wireSessionIdentity(mcpServer, client, analytics, apiKey);
 
     sseSessions.set(transport.sessionId, transport);
 

@@ -2,6 +2,7 @@ const BASE_URL = 'https://api.adbutler.com/v2';
 
 export class AdButlerClient {
   private apiKey: string | undefined;
+  private onKeyChange?: (key: string) => void;
 
   constructor(apiKey?: string) {
     this.apiKey = apiKey;
@@ -13,6 +14,16 @@ export class AdButlerClient {
 
   setApiKey(key: string): void {
     this.apiKey = key;
+    this.onKeyChange?.(key);
+  }
+
+  /**
+   * Subscribe to setApiKey calls. Used by the hosted SSE/HTTP transport to
+   * keep the analytics SessionAnalytics' key fingerprint in sync, including
+   * after `setup_api_key` rewrites the key mid-session.
+   */
+  setKeyChangeListener(cb: (key: string) => void): void {
+    this.onKeyChange = cb;
   }
 
   async postPublic(path: string, body?: Record<string, unknown>): Promise<unknown> {

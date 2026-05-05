@@ -57,14 +57,15 @@ function registerTools(server: McpServer, tools: ToolDef[], analytics?: SessionA
           return { content: [{ type: 'text' as const, text }] };
         } catch (err) {
           const errorCode = extractAdButlerErrorCode(err);
+          const message = err instanceof Error ? err.message : String(err);
           analytics?.trackToolCall({
             tool: tool.name,
             status: 'error',
             durationMs: performance.now() - start,
             errorCode,
             errorClass: classifyError(err, errorCode),
+            errorMessage: message,
           });
-          const message = err instanceof Error ? err.message : String(err);
           return { content: [{ type: 'text' as const, text: `Error: ${message}` }], isError: true };
         }
       },
@@ -127,7 +128,7 @@ export function createServer(
 ): McpServer {
   const server = new McpServer({
     name: 'adbutler',
-    version: '2.5.1',
+    version: '2.5.2',
   });
 
   // Always show all API tools — they self-gate on auth at call time.
