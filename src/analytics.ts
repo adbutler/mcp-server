@@ -4,14 +4,15 @@
  * the env var.
  *
  * What this captures: tool name, transport, session id, account id (from /self),
- * MCP client name/version (from initialize handshake), duration, ok/error status,
- * upstream HTTP error code on failure.
+ * MCP client name/version, API-key fingerprint (SHA-256 truncated, never the
+ * raw key), duration, ok/error status, upstream HTTP error code on failure,
+ * categorical error class, and (on failure) truncated err.message text.
  *
- * What this does NOT capture: tool arguments, response bodies, error message
- * text, the API key, IP addresses. The instrumentation point in server.ts only
- * sees `tool.name` and timing — there is no path for argument data to reach this
- * module.
+ * What this does NOT capture: tool arguments, response bodies, the raw API key,
+ * IP addresses. The instrumentation point in server.ts only sees `tool.name`,
+ * timing, and (on error) the message text the MCP server itself produced.
  */
+import { createHash } from 'node:crypto';
 
 type EventInput = {
   tool: string;
@@ -84,9 +85,6 @@ export type SessionAnalytics = {
  */
 export function fingerprintApiKey(key: string | undefined): string | null {
   if (!key) return null;
-  // Lazy require so the analytics module stays a no-op for stdio installs
-  // that never compute a fingerprint.
-  const { createHash } = require('node:crypto') as typeof import('node:crypto');
   return createHash('sha256').update(key).digest('hex').slice(0, 16);
 }
 

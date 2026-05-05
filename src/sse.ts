@@ -24,9 +24,13 @@ function wireSessionIdentity(
   };
   // Initial fingerprint from the connect-time key (if any).
   analytics.setApiKeyFingerprint(fingerprintApiKey(initialApiKey));
-  // Update whenever setup_api_key (or anything else) rewrites the key.
+  // Update whenever setup_api_key (or anything else) rewrites the key. Empty
+  // keys are intentionally ignored: setup_api_key clears the key on
+  // validation failure, and we want to preserve which key just failed for the
+  // upcoming error event in analytics. The next non-empty key (a successful
+  // setup_api_key retry) overwrites it.
   client.setKeyChangeListener((key) => {
-    analytics.setApiKeyFingerprint(fingerprintApiKey(key));
+    if (key) analytics.setApiKeyFingerprint(fingerprintApiKey(key));
   });
   if (client.isAuthenticated) {
     client.get('/self')
