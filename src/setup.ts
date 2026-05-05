@@ -53,11 +53,15 @@ export function setupTools(
         client.setApiKey(apiKey);
         try {
           await client.get('/self');
-        } catch {
+        } catch (err) {
           client.setApiKey('');
+          // Preserve cause so analytics' classifyError can still see the
+          // underlying upstream HTTP status (e.g. 403 from AdButler), while the
+          // user-facing message stays clean.
           throw new Error(
             'Invalid API key. Please check your key and try again. ' +
             'You can find your API key in AdButler → Settings → API Keys.',
+            { cause: err },
           );
         }
 

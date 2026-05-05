@@ -155,6 +155,21 @@ Pre-built skill prompts that guide the AI through complete workflows end-to-end.
 
 100% coverage of the AdButler [v2 OpenAPI spec](https://api.adbutler.com/openapi.json) (604/604 endpoints).
 
+## Telemetry
+
+The **hosted** server at `mcp.adbutler.com` collects minimal usage analytics so we can understand which tools are popular, prioritize improvements, and catch regressions. We capture, per tool call:
+
+- Tool name (e.g. `list_zones`, `create_campaign`) — never tool arguments
+- Account ID (derived once per session from `/self`)
+- Transport (HTTP or SSE), MCP client name and version (e.g. Claude Desktop), call duration, and success/error status
+- For errors, the upstream HTTP status code only — never the message body
+
+We **never** collect: tool arguments, response bodies, error message text, your API key, IP addresses, request bodies. The instrumentation only sees the tool name and timing.
+
+**Self-installed copies — npm package, stdio, your own deployment — collect zero data.** The instrumentation only fires when the `ANALYTICS_INGEST_URL` environment variable is set, which is only true for the hosted endpoint at mcp.adbutler.com.
+
+If you'd prefer to opt out of analytics on the hosted server, run your own copy via stdio or self-host the SSE/HTTP server.
+
 ## Development
 
 Local source for contributors:

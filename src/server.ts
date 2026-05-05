@@ -1,5 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { AdButlerClient } from './client.js';
+import type { SessionAnalytics } from './analytics.js';
+import { extractAdButlerErrorCode, classifyError } from './analytics.js';
 import { setupTools } from './setup.js';
 import {
   advertiserTools,
@@ -37,17 +39,31 @@ import {
 import type { ToolDef } from './types.js';
 import { registerPrompts } from './prompts.js';
 
-function registerTools(server: McpServer, tools: ToolDef[]): void {
+function registerTools(server: McpServer, tools: ToolDef[], analytics?: SessionAnalytics): void {
   for (const tool of tools) {
     server.tool(
       tool.name,
       tool.description,
       tool.schema,
       async (args) => {
+        const start = performance.now();
         try {
           const text = await tool.handler(args as Record<string, unknown>);
+          analytics?.trackToolCall({
+            tool: tool.name,
+            status: 'ok',
+            durationMs: performance.now() - start,
+          });
           return { content: [{ type: 'text' as const, text }] };
         } catch (err) {
+          const errorCode = extractAdButlerErrorCode(err);
+          analytics?.trackToolCall({
+            tool: tool.name,
+            status: 'error',
+            durationMs: performance.now() - start,
+            errorCode,
+            errorClass: classifyError(err, errorCode),
+          });
           const message = err instanceof Error ? err.message : String(err);
           return { content: [{ type: 'text' as const, text: `Error: ${message}` }], isError: true };
         }
@@ -107,20 +123,20 @@ function getApiTools(client: AdButlerClient): ToolDef[] {
  */
 export function createServer(
   client: AdButlerClient,
-  options: { persistCredentials?: boolean } = {},
+  options: { persistCredentials?: boolean; analytics?: SessionAnalytics } = {},
 ): McpServer {
   const server = new McpServer({
     name: 'adbutler',
-    version: '2.4.2',
+    version: '2.5.1',
   });
 
   // Always show all API tools — they self-gate on auth at call time.
-  registerTools(server, getApiTools(client));
+  registerTools(server, getApiTools(client), options.analytics);
 
   // Setup tools also always present so users without a key can authenticate
   // from inside the chat. onAuthenticated is a no-op now since tools are
   // already registered; setup_api_key just updates the client's in-memory key.
-  registerTools(server, setupTools(client, () => {}, options.persistCredentials ?? false));
+  registerTools(server, setupTools(client, () => {}, options.persistCredentials ?? false), options.analytics);
 
   // Skill prompts available regardless of auth state.
   registerPrompts(server);

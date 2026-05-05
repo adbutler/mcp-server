@@ -5,6 +5,29 @@ import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { AdButlerClient } from './client.js';
 import { createServer } from './server.js';
+import { createSessionAnalytics, type SessionAnalytics } from './analytics.js';
+
+/** Wire MCP initialize callback → analytics.setClientInfo, plus fire-and-forget /self for account_id. */
+function wireSessionIdentity(
+  mcpServer: McpServer,
+  client: AdButlerClient,
+  analytics: SessionAnalytics,
+): void {
+  mcpServer.server.oninitialized = () => {
+    const info = mcpServer.server.getClientVersion();
+    if (info) analytics.setClientInfo(info.name, info.version);
+  };
+  if (client.isAuthenticated) {
+    client.get('/self')
+      .then((self: unknown) => {
+        const id = (self as { account_id?: number } | null)?.account_id;
+        if (typeof id === 'number') analytics.setAccountId(id);
+      })
+      .catch(() => {
+        // Bad/missing key or upstream error — events still flow with null account_id.
+      });
+  }
+}
 
 const PORT = parseInt(process.env.PORT || '3000', 10);
 
@@ -95,20 +118,22 @@ const httpServer = createHttpServer(async (req, res) => {
     const body = await readJsonBody(req).catch(() => undefined);
     const apiKey = extractApiKey(req, url);
     const client = new AdButlerClient(apiKey);
-    const mcpServer = createServer(client);
+    const newSessionId = randomUUID();
+    const analytics = createSessionAnalytics({ sessionId: newSessionId, transport: 'http' });
+    const mcpServer = createServer(client, { analytics });
+    wireSessionIdentity(mcpServer, client, analytics);
 
-    let createdSessionId: string | undefined;
     const transport = new StreamableHTTPServerTransport({
-      sessionIdGenerator: () => randomUUID(),
+      sessionIdGenerator: () => newSessionId,
       onsessioninitialized: (sid) => {
-        createdSessionId = sid;
         httpSessions.set(sid, { transport, mcpServer });
       },
     });
 
     transport.onclose = () => {
-      if (createdSessionId) httpSessions.delete(createdSessionId);
+      httpSessions.delete(newSessionId);
       mcpServer.close().catch(() => {});
+      analytics.endSession();
     };
 
     await mcpServer.connect(transport);
@@ -120,14 +145,17 @@ const httpServer = createHttpServer(async (req, res) => {
   if (url.pathname === '/sse' && req.method === 'GET') {
     const apiKey = extractApiKey(req, url);
     const client = new AdButlerClient(apiKey);
-    const mcpServer = createServer(client);
     const transport = new SSEServerTransport('/messages', res);
+    const analytics = createSessionAnalytics({ sessionId: transport.sessionId, transport: 'sse' });
+    const mcpServer = createServer(client, { analytics });
+    wireSessionIdentity(mcpServer, client, analytics);
 
     sseSessions.set(transport.sessionId, transport);
 
     res.on('close', () => {
       sseSessions.delete(transport.sessionId);
       mcpServer.close().catch(() => {});
+      analytics.endSession();
     });
 
     await mcpServer.connect(transport);
