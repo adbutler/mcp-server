@@ -3,3 +3,4 @@ dist/
 key.pem
 .claude/
 adbutler-skills/
+src/openapi-spec.json

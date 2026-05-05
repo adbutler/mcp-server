@@ -35,6 +35,7 @@ import {
   vast42Tools,
   ortbNativeAssetTools,
   zoneOrtbNativeAdTools,
+  apiSearchTools,
 } from './tools/index.js';
 import type { ToolDef } from './types.js';
 import { registerPrompts } from './prompts.js';
@@ -106,6 +107,7 @@ function getApiTools(client: AdButlerClient): ToolDef[] {
     ...vast42Tools(client),
     ...ortbNativeAssetTools(client),
     ...zoneOrtbNativeAdTools(client),
+    ...apiSearchTools(client),
   ];
 }
 
@@ -128,7 +130,7 @@ export function createServer(
 ): McpServer {
   const server = new McpServer({
     name: 'adbutler',
-    version: '2.5.4',
+    version: '2.6.0',
   });
 
   // Always show all API tools — they self-gate on auth at call time.

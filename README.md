@@ -137,6 +137,18 @@ Pre-built skill prompts that guide the AI through complete workflows end-to-end.
 | `channels` | Bundles zones into a channel and assigns campaigns |
 | `drafts` | Stages a complete campaign as drafts before going live |
 
+### 3 fallback meta-tools (search, describe, call)
+
+When you need an endpoint that no specific tool wraps — or when the user asks about a *field* (e.g. "priority", "frequency cap") rather than a resource — three escape-hatch tools cover the gap:
+
+| Tool | What it does |
+|------|--------------|
+| `search_adbutler_api` | Keyword-search the full AdButler OpenAPI spec for matching endpoints |
+| `describe_adbutler_api` | Get the full schema (params, body, response) for one endpoint |
+| `call_adbutler_api` | Invoke any endpoint by method+path, with the session's auth applied automatically |
+
+These complement (don't replace) the specific tools below — the LLM continues to prefer specific tools when they obviously match.
+
 ### 600+ tools across the full AdButler API
 
 | Domain | Tools | Examples |

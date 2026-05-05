@@ -29,3 +29,4 @@ export { eventLogUploadTools } from './event-log-uploads.js';
 export { vast42Tools } from './vast42.js';
 export { ortbNativeAssetTools } from './ortb-native-assets.js';
 export { zoneOrtbNativeAdTools } from './zone-ortb-native-ads.js';
+export { apiSearchTools } from './api-search.js';

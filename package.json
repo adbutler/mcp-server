@@ -1,6 +1,6 @@
 {
   "name": "@adbutler/mcp-server",
-  "version": "2.5.4",
+  "version": "2.6.0",
   "mcpName": "com.adbutler/mcp-server",
   "description": "MCP server for the AdButler ad management API. Manage advertisers, campaigns, zones, creatives, placements, VAST video, programmatic, targeting, drafts, contracts, and reports from Claude, ChatGPT, Cursor, Windsurf, and any other MCP client.",
   "type": "module",
@@ -10,10 +10,12 @@
   "main": "dist/index.js",
   "files": [
     "dist",
+    "scripts",
     "README.md"
   ],
   "scripts": {
-    "build": "tsc",
+    "prebuild": "node scripts/fetch-openapi.mjs",
+    "build": "tsc && cp src/openapi-spec.json dist/",
     "start": "node dist/index.js",
     "start:sse": "node dist/sse.js",
     "dev": "tsc --watch",

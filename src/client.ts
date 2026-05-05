@@ -100,6 +100,33 @@ export class AdButlerClient {
     return this.handleResponse(res);
   }
 
+  /**
+   * Generic invocation used by the `call_adbutler_api` meta-tool. Accepts a
+   * fully-substituted path (caller has already replaced `{...}` placeholders),
+   * optional query params, and optional body. Same auth + handleResponse path
+   * as the typed wrappers above.
+   */
+  async request(
+    method: string,
+    path: string,
+    options?: { query?: Record<string, unknown>; body?: Record<string, unknown> },
+  ): Promise<unknown> {
+    this.checkAuth();
+    const upper = method.toUpperCase();
+    const url = new URL(BASE_URL + path);
+    if (options?.query) {
+      for (const [k, v] of Object.entries(options.query)) {
+        if (v !== undefined && v !== null) url.searchParams.set(k, String(v));
+      }
+    }
+    const init: RequestInit = { method: upper, headers: this.getHeaders() };
+    if (options?.body !== undefined && upper !== 'GET' && upper !== 'HEAD') {
+      init.body = JSON.stringify(options.body);
+    }
+    const res = await fetch(url.toString(), init);
+    return this.handleResponse(res);
+  }
+
   private async handleResponse(res: Response): Promise<unknown> {
     const text = await res.text();
     if (!res.ok) {
