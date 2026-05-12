@@ -3,6 +3,7 @@ import { writeFile, readFile, mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
 import type { AdButlerClient } from './client.js';
+import { extractAdButlerErrorCode } from './analytics.js';
 import type { ToolDef } from './types.js';
 
 const CREDENTIALS_DIR = join(homedir(), '.adbutler');
@@ -49,20 +50,28 @@ export function setupTools(
       handler: async (args) => {
         const apiKey = args.api_key as string;
 
-        // Validate the key by making a test request
+        // Validate the key by hitting a real authenticated endpoint. Only
+        // HTTP 401 proves the key is bad; 403 means the key is valid but
+        // lacks permission for this endpoint, and 404/5xx/network errors
+        // tell us nothing about the key itself — in all those cases the
+        // API accepted the Authorization header.
         client.setApiKey(apiKey);
         try {
-          await client.get('/self');
+          await client.get('/managers', { limit: 1 });
         } catch (err) {
-          client.setApiKey('');
-          // Preserve cause so analytics' classifyError can still see the
-          // underlying upstream HTTP status (e.g. 403 from AdButler), while the
-          // user-facing message stays clean.
-          throw new Error(
-            'Invalid API key. Please check your key and try again. ' +
-            'You can find your API key in AdButler → Settings → API Keys.',
-            { cause: err },
-          );
+          const status = extractAdButlerErrorCode(err);
+          if (status === 401) {
+            client.setApiKey('');
+            // Preserve cause so analytics' classifyError can still see the
+            // underlying upstream HTTP status, while the user-facing
+            // message stays clean.
+            throw new Error(
+              'Invalid API key. Please check your key and try again. ' +
+              'You can find your API key in AdButler → Settings → API Keys.',
+              { cause: err },
+            );
+          }
+          // Any other failure: the key was accepted by the API. Fall through.
         }
 
         if (persist) {
