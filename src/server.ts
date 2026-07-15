@@ -137,9 +137,19 @@ export function createServer(
   registerTools(server, getApiTools(client), options.analytics);
 
   // Setup tools also always present so users without a key can authenticate
-  // from inside the chat. onAuthenticated is a no-op now since tools are
-  // already registered; setup_api_key just updates the client's in-memory key.
-  registerTools(server, setupTools(client, () => {}, options.persistCredentials ?? false), options.analytics);
+  // from inside the chat. Tools are already registered, so onAuthenticated
+  // only forwards the account id (known for trial signups) to analytics.
+  registerTools(
+    server,
+    setupTools(
+      client,
+      (accountId) => {
+        if (typeof accountId === 'number') options.analytics?.setAccountId(accountId);
+      },
+      options.persistCredentials ?? false,
+    ),
+    options.analytics,
+  );
 
   // Skill prompts available regardless of auth state.
   registerPrompts(server);

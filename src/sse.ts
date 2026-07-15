@@ -9,9 +9,12 @@ import { createServer } from './server.js';
 import { createSessionAnalytics, type SessionAnalytics, fingerprintApiKey } from './analytics.js';
 
 /**
- * Wire MCP `initialize` callback → analytics.setClientInfo, fire-and-forget
- * /self for account_id, and subscribe to client.setApiKey changes so the
- * analytics fingerprint stays current after setup_api_key.
+ * Wire MCP `initialize` callback → analytics.setClientInfo, and subscribe to
+ * client.setApiKey changes so the analytics fingerprint stays current after
+ * setup_api_key. There is no public API endpoint that resolves the account
+ * behind a key, so per-customer attribution in analytics rests on the key
+ * fingerprint; account_id is only known for fresh trial signups (see
+ * verify_trial_email → onAuthenticated in server.ts).
  */
 function wireSessionIdentity(
   mcpServer: McpServer,
@@ -33,16 +36,6 @@ function wireSessionIdentity(
   client.setKeyChangeListener((key) => {
     if (key) analytics.setApiKeyFingerprint(fingerprintApiKey(key));
   });
-  if (client.isAuthenticated) {
-    client.get('/self')
-      .then((self: unknown) => {
-        const id = (self as { account_id?: number } | null)?.account_id;
-        if (typeof id === 'number') analytics.setAccountId(id);
-      })
-      .catch(() => {
-        // Bad/missing key or upstream error — events still flow with null account_id.
-      });
-  }
 }
 
 const PORT = parseInt(process.env.PORT || '3000', 10);

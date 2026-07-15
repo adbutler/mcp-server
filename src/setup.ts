@@ -32,7 +32,7 @@ async function storeApiKey(apiKey: string): Promise<void> {
  */
 export function setupTools(
   client: AdButlerClient,
-  onAuthenticated: () => void,
+  onAuthenticated: (accountId?: number) => void,
   persist: boolean,
 ): ToolDef[] {
   const reconnectHint = persist
@@ -166,7 +166,9 @@ export function setupTools(
         if (persist) {
           await storeApiKey(apiKey);
         }
-        onAuthenticated();
+        // Trial signup is the one flow where the API tells us the account id —
+        // pass it along so hosted analytics can attribute the session.
+        onAuthenticated(typeof result.account_id === 'number' ? result.account_id : undefined);
 
         return JSON.stringify({
           success: true,
