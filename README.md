@@ -93,23 +93,31 @@ The AdButler MCP works for both new and existing customers. What you see depends
 
 Use one of these:
 
-**Option 1 — set the API key in your client config (recommended for hosted)**
+**Option 1 — set the API key in your connection config (recommended: persists across sessions)**
 
-Add an `Authorization: Bearer YOUR_ADBUTLER_API_KEY` header on the SSE connection. Examples:
+Pass the key at connect time and every session authenticates automatically — the key never has to be shared in the chat.
 
-- **Claude Desktop** — edit `claude_desktop_config.json` → add `headers: { "Authorization": "Bearer YOUR_API_KEY" }` next to the SSE URL
+- **Claude Code** — `claude mcp add adbutler --transport http https://mcp.adbutler.com/mcp --header "Authorization: Bearer YOUR_API_KEY"`
+- **Claude Desktop** — edit `claude_desktop_config.json` → add `headers: { "Authorization": "Bearer YOUR_API_KEY" }` next to the server URL
 - **Cursor** — MCP server settings → Headers → add `Authorization: Bearer YOUR_API_KEY`
-- **Any client** — pass the header on the SSE GET to `https://mcp.adbutler.com/sse`
+- **claude.ai custom connectors** (no custom-header support) — use the URL form: `https://mcp.adbutler.com/mcp?api_key=YOUR_API_KEY`
+- **Any client** — `Authorization: Bearer …` header or `?api_key=…` query param, on `/mcp` (Streamable HTTP) or `/sse` (legacy SSE)
 
 Reconnect — all 600+ tools become available immediately.
 
-**Option 2 — configure inside the chat (works in any MCP client)**
+**Option 2 — configure inside the chat (current session only on hosted)**
 
-If your client doesn't support custom headers, just connect to the hosted MCP without auth and you'll see four onboarding tools. Then in the chat say:
+Connect to the hosted MCP without auth and you'll see four onboarding tools. Then in the chat say:
 
 > "Configure my AdButler API key: `your_api_key_here`"
 
 Your AI will call the `setup_api_key` tool, validate the key against your account, and unlock all the AdButler tools. You may need to disconnect and reconnect to refresh your client's tool list after.
+
+> ⚠️ On the hosted server, a key configured this way lasts **only until the session ends** — a new chat, a client restart, or a server-side reconnect will ask for it again. If you find yourself pasting the key into the chat repeatedly (and your AI warning you about sharing secrets in conversation), switch to Option 1: configure the key once in the connection settings and it persists.
+
+### Troubleshooting: "my API key won't stay configured"
+
+This means the key is being entered in-chat (Option 2) against the hosted server, where it is deliberately session-scoped — the hosted server is multi-tenant and never writes your key to disk. The fix is one-time setup in your client's connection config (Option 1 above): header for Claude Code / Claude Desktop / Cursor, `?api_key=` URL parameter for claude.ai custom connectors. After that, reconnects and new chats authenticate automatically.
 
 ### New to AdButler? (no account yet)
 

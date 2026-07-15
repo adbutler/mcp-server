@@ -1,11 +1,18 @@
 const BASE_URL = 'https://api.adbutler.com/v2';
 
+const DEFAULT_AUTH_HELP =
+  'If you have an existing AdButler account, call the setup_api_key tool with your key. ' +
+  'If you are new to AdButler, call create_trial_account to sign up. ' +
+  'Get your API key from AdButler → Settings → API Keys.';
+
 export class AdButlerClient {
   private apiKey: string | undefined;
   private onKeyChange?: (key: string) => void;
+  private readonly authHelp: string;
 
-  constructor(apiKey?: string) {
+  constructor(apiKey?: string, authHelp: string = DEFAULT_AUTH_HELP) {
     this.apiKey = apiKey;
+    this.authHelp = authHelp;
   }
 
   get isAuthenticated(): boolean {
@@ -48,12 +55,7 @@ export class AdButlerClient {
 
   private checkAuth(): void {
     if (!this.apiKey) {
-      throw new Error(
-        'No AdButler API key configured. ' +
-        'If you have an existing AdButler account, call the setup_api_key tool with your key. ' +
-        'If you are new to AdButler, call create_trial_account to sign up. ' +
-        'Get your API key from AdButler → Settings → API Keys.'
-      );
+      throw new Error('No AdButler API key configured. ' + this.authHelp);
     }
   }
 

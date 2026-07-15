@@ -39,11 +39,24 @@ export function setupTools(
     ? ''
     : ' If your client does not show the new tools immediately, disconnect and reconnect to refresh the tool list.';
 
+  // On hosted, the key lives only in this session's memory — tell the user
+  // how to make it stick so they never have to paste the key in chat again.
+  const persistNote = persist
+    ? ''
+    : ' IMPORTANT: on the hosted server this key applies to the CURRENT SESSION ONLY. ' +
+      'To connect automatically every session — and keep the key out of the chat — the user should add it to their MCP connection settings once: ' +
+      'an "Authorization: Bearer YOUR_API_KEY" header (Claude Code, Claude Desktop, Cursor), ' +
+      'or "?api_key=YOUR_API_KEY" appended to the server URL (claude.ai custom connectors). ' +
+      'Please relay these instructions to the user.';
+
   return [
     {
       name: 'setup_api_key',
       description:
-        'Configure AdButler with an existing API key. Use this if the user already has an AdButler account and API key.',
+        'Configure AdButler with an existing API key. Use this if the user already has an AdButler account and API key.' +
+        (persist
+          ? ''
+          : ' Note: this configures the key for the current session only. For a persistent connection, the user should instead put the key in their MCP connection settings (an "Authorization: Bearer" header, or "?api_key=" appended to the server URL) — prefer suggesting that before asking the user to share their key in chat.'),
       schema: {
         api_key: z.string().describe('The AdButler API key'),
       },
@@ -83,7 +96,7 @@ export function setupTools(
           success: true,
           message:
             'API key validated. All AdButler tools are now available — you can start managing advertisers, campaigns, zones, and more.' +
-            reconnectHint,
+            reconnectHint + persistNote,
         }, null, 2);
       },
     },
@@ -159,7 +172,7 @@ export function setupTools(
           success: true,
           message:
             'Email verified and API key configured. All AdButler tools are now available — you can start managing advertisers, campaigns, zones, and more.' +
-            reconnectHint,
+            reconnectHint + persistNote,
           account_id: result.account_id,
         }, null, 2);
       },

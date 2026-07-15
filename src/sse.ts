@@ -2,6 +2,7 @@ import { createServer as createHttpServer, IncomingMessage } from 'node:http';
 import { randomUUID } from 'node:crypto';
 import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
+import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { AdButlerClient } from './client.js';
 import { createServer } from './server.js';
@@ -45,6 +46,21 @@ function wireSessionIdentity(
 }
 
 const PORT = parseInt(process.env.PORT || '3000', 10);
+
+/**
+ * Auth guidance for the hosted server, surfaced whenever a tool is called
+ * without a key. Steers users toward connection-level configuration —
+ * pasting the key into the chat via setup_api_key only lasts one session
+ * here, and repeatedly sharing a secret in conversation is exactly what
+ * MCP clients (rightly) warn about.
+ */
+const HOSTED_AUTH_HELP =
+  'RECOMMENDED (persists across sessions): ask the user to add their API key to the MCP connection settings — ' +
+  'either an "Authorization: Bearer YOUR_API_KEY" header (Claude Code, Claude Desktop, Cursor), ' +
+  'or "?api_key=YOUR_API_KEY" appended to the server URL (claude.ai custom connectors, which do not support custom headers). ' +
+  'Once configured there, every new session authenticates automatically and the key never has to be shared in chat. ' +
+  'ALTERNATIVE (this session only): call the setup_api_key tool with the key — it will need to be entered again next session. ' +
+  'New to AdButler? Call create_trial_account. Get your API key from AdButler → Settings → API Keys.';
 
 // Active SSE sessions: sessionId → transport (legacy /sse path)
 const sseSessions = new Map<string, SSEServerTransport>();
@@ -119,7 +135,22 @@ const httpServer = createHttpServer(async (req, res) => {
       return;
     }
 
-    // New session — must be initialize POST. GET/DELETE without a session = error.
+    // Stale or unknown session ID (e.g. the container restarted and dropped
+    // all in-memory sessions) — 404 per the MCP spec, which tells the client
+    // to transparently start over with a fresh `initialize`. Clients that
+    // pass the API key at connect time (Authorization header / ?api_key=)
+    // re-authenticate automatically on that re-init.
+    if (sessionId) {
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        jsonrpc: '2.0',
+        error: { code: -32001, message: 'Session not found or expired. Start a new session by sending an initialize request.' },
+        id: null,
+      }));
+      return;
+    }
+
+    // No session ID: only an `initialize` POST may create a new session.
     if (req.method !== 'POST') {
       res.writeHead(400, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({
@@ -131,8 +162,17 @@ const httpServer = createHttpServer(async (req, res) => {
     }
 
     const body = await readJsonBody(req).catch(() => undefined);
+    if (!isInitializeRequest(body)) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        jsonrpc: '2.0',
+        error: { code: -32000, message: 'Bad Request: expected an initialize request to start a new session' },
+        id: null,
+      }));
+      return;
+    }
     const apiKey = extractApiKey(req, url);
-    const client = new AdButlerClient(apiKey);
+    const client = new AdButlerClient(apiKey, HOSTED_AUTH_HELP);
     const newSessionId = randomUUID();
     const analytics = createSessionAnalytics({ sessionId: newSessionId, transport: 'http' });
     const mcpServer = createServer(client, { analytics });
@@ -159,7 +199,7 @@ const httpServer = createHttpServer(async (req, res) => {
   // ─── /sse — Legacy SSE transport (kept for backward compatibility) ───
   if (url.pathname === '/sse' && req.method === 'GET') {
     const apiKey = extractApiKey(req, url);
-    const client = new AdButlerClient(apiKey);
+    const client = new AdButlerClient(apiKey, HOSTED_AUTH_HELP);
     const transport = new SSEServerTransport('/messages', res);
     const analytics = createSessionAnalytics({ sessionId: transport.sessionId, transport: 'sse' });
     const mcpServer = createServer(client, { analytics });

@@ -130,7 +130,7 @@ export function createServer(
 ): McpServer {
   const server = new McpServer({
     name: 'adbutler',
-    version: '2.6.0',
+    version: '2.6.2',
   });
 
   // Always show all API tools — they self-gate on auth at call time.
