@@ -35,6 +35,7 @@ import {
   vast42Tools,
   ortbNativeAssetTools,
   zoneOrtbNativeAdTools,
+  koganTools,
   apiSearchTools,
 } from './tools/index.js';
 import type { ToolDef } from './types.js';
@@ -107,6 +108,7 @@ function getApiTools(client: AdButlerClient): ToolDef[] {
     ...vast42Tools(client),
     ...ortbNativeAssetTools(client),
     ...zoneOrtbNativeAdTools(client),
+    ...koganTools(client),
     ...apiSearchTools(client),
   ];
 }
