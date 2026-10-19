@@ -134,7 +134,7 @@ export function createServer(
 ): McpServer {
   const server = new McpServer({
     name: 'adbutler',
-    version: '2.6.2',
+    version: '2.8.0',
   });
 
   // Always show all API tools — they self-gate on auth at call time.
