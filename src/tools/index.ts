@@ -31,3 +31,4 @@ export { ortbNativeAssetTools } from './ortb-native-assets.js';
 export { zoneOrtbNativeAdTools } from './zone-ortb-native-ads.js';
 export { apiSearchTools } from './api-search.js';
 export { koganTools } from './kogan.js';
+export { myHealthTeamsTools } from './myhealthteams.js';

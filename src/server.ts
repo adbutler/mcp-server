@@ -36,6 +36,7 @@ import {
   ortbNativeAssetTools,
   zoneOrtbNativeAdTools,
   koganTools,
+  myHealthTeamsTools,
   apiSearchTools,
 } from './tools/index.js';
 import type { ToolDef } from './types.js';
@@ -109,6 +110,7 @@ function getApiTools(client: AdButlerClient): ToolDef[] {
     ...ortbNativeAssetTools(client),
     ...zoneOrtbNativeAdTools(client),
     ...koganTools(client),
+    ...myHealthTeamsTools(client),
     ...apiSearchTools(client),
   ];
 }
