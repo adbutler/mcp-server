@@ -82,7 +82,7 @@ export function publisherTools(client: AdButlerClient): ToolDef[] {
     },
     {
       name: 'delete_publisher',
-      description: 'Delete a publisher',
+      description: 'Permanently delete a publisher by ID. Prefer archive_publisher if it may be needed again.',
       schema: {
         id: z.number().describe('Publisher ID'),
       },

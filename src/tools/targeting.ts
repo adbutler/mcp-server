@@ -53,7 +53,7 @@ export function targetingTools(client: AdButlerClient): ToolDef[] {
     },
     {
       name: 'delete_data_key',
-      description: 'Delete a data key',
+      description: 'Permanently delete a data key by its ID. This cannot be undone.',
       schema: {
         id: z.number().describe('Data key ID'),
       },
@@ -250,7 +250,7 @@ export function targetingTools(client: AdButlerClient): ToolDef[] {
     },
     {
       name: 'delete_geo_target',
-      description: 'Delete a geo target',
+      description: 'Permanently delete a geo target by its ID. This cannot be undone.',
       schema: {
         id: z.number().describe('Geo target ID'),
       },

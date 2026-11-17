@@ -367,7 +367,7 @@ export function vastTools(client: AdButlerClient): ToolDef[] {
     // ========================================================================
     {
       name: 'vast_list_zones',
-      description: 'List all VAST zones',
+      description: 'List all VAST (video) zones in your AdButler account.',
       schema: { ...PaginationParams },
       handler: async (args) => {
         const data = await client.get('/vast-zones', args);
@@ -421,7 +421,7 @@ export function vastTools(client: AdButlerClient): ToolDef[] {
     },
     {
       name: 'vast_delete_zone',
-      description: 'Delete a VAST zone',
+      description: 'Permanently delete a VAST zone by ID. Prefer vast_archive_zone if it may be needed again.',
       schema: {
         id: z.number().describe('VAST zone ID'),
       },

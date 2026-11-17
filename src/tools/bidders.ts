@@ -26,7 +26,7 @@ export function bidderTools(client: AdButlerClient): ToolDef[] {
     },
     {
       name: 'create_bidder',
-      description: 'Create a new bidder',
+      description: 'Create a new programmatic bidder with a name and optional bid endpoint URL. Returns the created bidder.',
       schema: {
         name: z.string().describe('Bidder name'),
         bid_url: z.string().optional().describe('Bid endpoint URL'),
@@ -54,7 +54,7 @@ export function bidderTools(client: AdButlerClient): ToolDef[] {
     },
     {
       name: 'delete_bidder',
-      description: 'Delete a bidder',
+      description: 'Permanently delete a programmatic bidder by its ID. This cannot be undone.',
       schema: {
         id: z.number().describe('Bidder ID'),
       },

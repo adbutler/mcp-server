@@ -50,7 +50,7 @@ export function dataListTools(client: AdButlerClient): ToolDef[] {
     },
     {
       name: 'delete_data_list',
-      description: 'Delete a data list',
+      description: 'Permanently delete a data list by its ID. This cannot be undone.',
       schema: {
         id: z.number().describe('Data list ID'),
       },

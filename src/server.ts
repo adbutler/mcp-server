@@ -41,13 +41,31 @@ import {
 } from './tools/index.js';
 import type { ToolDef } from './types.js';
 import { registerPrompts } from './prompts.js';
+import { toolAnnotations, toolTitle } from './annotations.js';
+
+const SERVER_INSTRUCTIONS = `AdButler is an ad server. This server exposes the AdButler REST API so you can manage one AdButler account: advertisers, campaigns, ad items and creatives, publishers, zones and channels, placements, schedules and targeting, VAST video (tools prefixed vast_ and vast42_), programmatic and PMP deals, contracts, product catalogs, and reports. It is for publishers and ad operations teams working in their own account.
+
+Getting started: every API tool needs an AdButler API key. If a call says no key is configured, use setup_api_key (or create_trial_account for a new user), then retry.
+
+Conventions:
+- Tool names are verb_object. list_* and get_* only read. create_*, update_* and delete_* change live ad serving, so confirm with the user before changing or deleting anything they did not ask for.
+- delete_* is permanent. Where an archive_* tool exists, prefer it: archived objects can be restored with unarchive_*.
+- draft_* tools work on unpublished drafts; nothing serves until draft_save_campaign publishes it.
+- List tools page with limit (max 100) and offset. Look up IDs with list_* rather than guessing them.
+- If no dedicated tool fits, use search_adbutler_api and describe_adbutler_api to find the endpoint, then call_adbutler_api.
+
+Limits: this server cannot see data outside the authenticated account and does not handle billing.`;
 
 function registerTools(server: McpServer, tools: ToolDef[], analytics?: SessionAnalytics): void {
   for (const tool of tools) {
-    server.tool(
+    server.registerTool(
       tool.name,
-      tool.description,
-      tool.schema,
+      {
+        title: toolTitle(tool.name),
+        description: tool.description,
+        inputSchema: tool.schema,
+        annotations: toolAnnotations(tool.name),
+      },
       async (args) => {
         const start = performance.now();
         try {
@@ -132,10 +150,13 @@ export function createServer(
   client: AdButlerClient,
   options: { persistCredentials?: boolean; analytics?: SessionAnalytics } = {},
 ): McpServer {
-  const server = new McpServer({
-    name: 'adbutler',
-    version: '2.8.0',
-  });
+  const server = new McpServer(
+    {
+      name: 'adbutler',
+      version: '2.9.0',
+    },
+    { instructions: SERVER_INSTRUCTIONS },
+  );
 
   // Always show all API tools — they self-gate on auth at call time.
   registerTools(server, getApiTools(client), options.analytics);

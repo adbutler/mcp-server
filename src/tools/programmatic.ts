@@ -210,7 +210,7 @@ export function programmaticTools(client: AdButlerClient): ToolDef[] {
     },
     {
       name: 'delete_pmp_deal',
-      description: 'Delete a PMP deal',
+      description: 'Permanently delete a PMP (private marketplace) deal by ID.',
       schema: {
         id: z.number().describe('PMP deal ID'),
       },

@@ -7,7 +7,7 @@ export function contractTools(client: AdButlerClient): ToolDef[] {
     // --- Contracts ---
     {
       name: 'list_contracts',
-      description: 'List all contracts',
+      description: 'List all contracts in your AdButler account.',
       schema: { ...PaginationParams },
       handler: async (args) => {
         const data = await client.get('/contracts', args);
@@ -65,7 +65,7 @@ export function contractTools(client: AdButlerClient): ToolDef[] {
     },
     {
       name: 'delete_contract',
-      description: 'Delete a contract',
+      description: 'Permanently delete a contract by ID. Prefer archive_contract if it may be needed again.',
       schema: {
         id: z.number().describe('Contract ID'),
       },

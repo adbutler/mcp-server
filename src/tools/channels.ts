@@ -7,7 +7,7 @@ export function channelTools(client: AdButlerClient): ToolDef[] {
     // --- Channels ---
     {
       name: 'list_channels',
-      description: 'List all channels',
+      description: 'List all channels in your AdButler account.',
       schema: { ...PaginationParams },
       handler: async (args) => {
         const data = await client.get('/channels', args);
@@ -54,7 +54,7 @@ export function channelTools(client: AdButlerClient): ToolDef[] {
     },
     {
       name: 'delete_channel',
-      description: 'Delete a channel',
+      description: 'Permanently delete a channel by ID. Prefer archive_channel if it may be needed again.',
       schema: {
         id: z.number().describe('Channel ID'),
       },

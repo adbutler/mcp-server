@@ -78,7 +78,7 @@ export function scheduleTools(client: AdButlerClient): ToolDef[] {
     },
     {
       name: 'delete_schedule',
-      description: 'Delete a schedule',
+      description: 'Permanently delete a schedule by its ID. This cannot be undone.',
       schema: {
         id: z.number().describe('Schedule ID'),
       },

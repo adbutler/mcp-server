@@ -97,7 +97,7 @@ export function accountTools(client: AdButlerClient): ToolDef[] {
     },
     {
       name: 'delete_manager',
-      description: 'Delete a manager',
+      description: 'Permanently delete a manager (account user) by ID. This cannot be undone.',
       schema: {
         id: z.number().describe('Manager ID'),
       },
@@ -191,7 +191,7 @@ export function accountTools(client: AdButlerClient): ToolDef[] {
     },
     {
       name: 'delete_role',
-      description: 'Delete a role',
+      description: 'Permanently delete a user role by its ID. This cannot be undone.',
       schema: {
         id: z.number().describe('Role ID'),
       },
@@ -251,7 +251,7 @@ export function accountTools(client: AdButlerClient): ToolDef[] {
     },
     {
       name: 'delete_contact',
-      description: 'Delete a contact',
+      description: 'Permanently delete a contact by its ID. This cannot be undone.',
       schema: {
         id: z.number().describe('Contact ID'),
       },
